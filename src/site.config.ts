@@ -64,8 +64,8 @@ export const theme: ThemeUserConfig = {
     links: [
       // Registration link
       {
-        title: 'Moe ICP 114514',
-        link: 'https://icp.gov.moe/?keyword=114514',
+        title: '鄂ICP备2026007952号',
+        link: 'https://beian.miit.gov.cn/',
         style: 'text-sm' // Uno/TW CSS class
       },
       // Privacy Policy link
@@ -79,7 +79,7 @@ export const theme: ThemeUserConfig = {
     credits: true,
     /** Optional details about the social media accounts for this site. */
     social: [
-      { icon: 'github', label: 'GitHub', href: 'https://github.com/cworld1/astro-theme-pure' },
+      { icon: 'github', label: 'GitHub', href: 'https://github.com/residream' },
       { icon: 'rss', label: 'RSS', href: '/rss.xml' }
     ]
   },
