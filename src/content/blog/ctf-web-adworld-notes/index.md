@@ -5,7 +5,7 @@ publishDate: "2026-02-14T19:33:45"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './breath.jpg', color: '#6E6A62' }
+heroImage: { src: './breath.jpg' }
 language: '简中'
 draft: false
 ---

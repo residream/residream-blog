@@ -5,7 +5,7 @@ publishDate: "2026-02-13T21:17:50"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './machine-life.jpg', color: '#888A90' }
+heroImage: { src: './machine-life.jpg' }
 language: '简中'
 draft: false
 ---

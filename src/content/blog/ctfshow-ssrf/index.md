@@ -5,7 +5,7 @@ publishDate: "2026-03-11T23:02:34"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './rooftop-amusement-park.jpg', color: '#A68288' }
+heroImage: { src: './rooftop-amusement-park.jpg', color: '#9F7E9B' }
 language: '简中'
 draft: false
 ---

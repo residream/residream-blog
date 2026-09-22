@@ -4,7 +4,7 @@ description: "跟着黑马程序员学习 C++ 的练手记录，包含通讯录�
 publishDate: "2026-02-13T00:16:57"
 tags:
   - "c-cpp"
-heroImage: { src: './acoustic-session.jpg', color: '#9A7D57' }
+heroImage: { src: './acoustic-session.jpg', color: '#A0957D' }
 language: '简中'
 draft: false
 ---

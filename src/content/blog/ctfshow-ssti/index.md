@@ -5,7 +5,7 @@ publishDate: "2026-02-26T14:54:26"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './sea-breeze.jpg', color: '#70869C' }
+heroImage: { src: './sea-breeze.jpg', color: '#5D6D7E' }
 language: '简中'
 draft: false
 ---
