@@ -1,7 +1,7 @@
 ---
 title: "C语言课设——医疗管理系统"
 description: "C 语言课程设计医疗管理系统的开发记录与项目说明，包含三角色功能、链表数据模型、文件持久化、CMake 构建流程及关键技术实现。"
-publishDate: "2026-04-03"
+publishDate: "2026-04-03T23:13:36"
 tags:
   - "c-cpp"
 heroImage: { src: './location-unknown.jpg', color: '#638E8E' }

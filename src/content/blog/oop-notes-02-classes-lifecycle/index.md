@@ -1,10 +1,10 @@
 ---
 title: "OOP复(yù)习(xí)笔记（二）：类、对象与生命周期"
 description: "OOP 复习笔记第二篇，整理类与对象、前置声明、成员函数、this 指针、访问控制、封装、静态成员、构造与析构及对象生命周期。"
-publishDate: "2026-06-03"
+publishDate: "2026-06-03T23:08:17"
 tags:
   - "c-cpp"
-heroImage: { src: './a-new-day.jpg', color: '#AA70AE' }
+heroImage: { src: './pain.jpg', color: '#66A4B7' }
 language: '简中'
 draft: false
 ---

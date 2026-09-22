@@ -1,7 +1,7 @@
 ---
 title: "CTF web 入门攻防世界刷题集合"
 description: "攻防世界 Web 入门刷题记录，整理文件包含、Flask Session 伪造、SSTI、SQL 注入、PHP 反序列化、SSRF 和 JavaScript 原型链污染等题目的解题过程。"
-publishDate: "2026-02-14"
+publishDate: "2026-02-14T19:33:45"
 tags:
   - "ctf"
   - "web"

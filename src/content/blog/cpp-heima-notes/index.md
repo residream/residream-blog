@@ -1,7 +1,7 @@
 ---
 title: "C++ 入门黑马程序员学习记录"
 description: "跟着黑马程序员学习 C++ 的练手记录，包含通讯录管理系统、职工管理系统、通用数组类模板、演讲比赛流程管理系统和机房预约系统。"
-publishDate: "2026-02-13"
+publishDate: "2026-02-13T00:16:57"
 tags:
   - "c-cpp"
 heroImage: { src: './acoustic-session.jpg', color: '#9A7D57' }

@@ -1,10 +1,10 @@
 ---
 title: "OOP复(yù)习(xí)笔记（三）：对象拷贝、运算符与动态内存"
 description: "OOP 复习笔记第三篇，整理对象拷贝与赋值、浅拷贝与深拷贝、运算符重载、动态内存分配、智能指针、引用计数、写时复制与定位分配。"
-publishDate: "2026-06-03"
+publishDate: "2026-06-03T23:09:37"
 tags:
   - "c-cpp"
-heroImage: { src: './take-me-home.jpg', color: '#A48E79' }
+heroImage: { src: './a-new-day.jpg', color: '#AA70AE' }
 language: '简中'
 draft: false
 ---

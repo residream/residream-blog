@@ -1,10 +1,10 @@
 ---
 title: "OOP复(yù)习(xí)笔记（五）：虚机制、多态与高级特性"
 description: "OOP 复习笔记第五篇，整理虚函数、虚函数表、RTTI 与多态应用，梳理面向对象设计、异常处理、异常安全、模板、CRTP 单例与 STL 泛型程序设计。"
-publishDate: "2026-06-03"
+publishDate: "2026-06-03T23:11:01"
 tags:
   - "c-cpp"
-heroImage: { src: './passing-by.jpg', color: '#9A8784' }
+heroImage: { src: './water-mirror.jpg', color: '#496C98' }
 language: '简中'
 draft: false
 ---
