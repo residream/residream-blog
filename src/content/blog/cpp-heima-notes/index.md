@@ -5,7 +5,7 @@ publishDate: "2026-02-13"
 tags:
   - "c-cpp"
 heroImage: { src: './acoustic-session.jpg', color: '#9A7D57' }
-language: '中文'
+language: '简中'
 draft: false
 ---
 
