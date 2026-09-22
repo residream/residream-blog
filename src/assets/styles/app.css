@@ -52,3 +52,12 @@ footer a[href] {
   text-decoration: none;
   font-weight: 400;
 }
+
+/* Waline: RSS 订阅是悬停展开控件，主题的两条无差别规则破坏了它的布局 */
+#waline .wl-rss > a {
+  display: flex;
+  max-width: none;
+}
+#waline .wl-rss span {
+  white-space: nowrap;
+}
