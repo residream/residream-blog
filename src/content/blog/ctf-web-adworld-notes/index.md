@@ -14,7 +14,7 @@ draft: false
 
 题目过滤了`/`，`convert`，`base`，`text`，`plain`，所以只能在当前路径下操作，且php伪协议几乎全部不可用，除了个data伪协议可以写成`data:,<?=exec(ls);` 然后发现当前目录下只有`index.php`文件
 
-![VNCTF Signin 解题截图（1/7）](./images/202602-image-3.png)
+![VNCTF Signin 配图1](./images/202602-image-3.png)
 
 然后想到尝试用pearcmd文件包含漏洞，利用config-create来在当前目录下创建文件以绕过无法用/以访问其他目录的问题，于是构造payload为：
 
@@ -24,27 +24,27 @@ draft: false
 
 得到
 
-![VNCTF Signin 解题截图（2/7）](./images/202602-image-4.png)
+![VNCTF Signin 配图2](./images/202602-image-4.png)
 
 写入成功，include得到
 
-![VNCTF Signin 解题截图（3/7）](./images/image-10.png)
+![VNCTF Signin 配图3](./images/image-10.png)
 
 发现被`<`被url编码了导致include没有识别到php标签而当成文本内容打印，所以改成用burpsuite抓包然后修改http包
 
-![VNCTF Signin 解题截图（4/7）](./images/image-9.png)
+![VNCTF Signin 配图4](./images/image-9.png)
 
 于是可以执行任意命令了
 
-![VNCTF Signin 解题截图（5/7）](./images/image-8.png)
+![VNCTF Signin 配图5](./images/image-8.png)
 
 拿到flag为**VNCTF{a7785325-3ea7-4b75-814f-76a90543e6cf}**
 
-![VNCTF Signin 解题截图（6/7）](./images/image-7.png)
+![VNCTF Signin 配图6](./images/image-7.png)
 
 后面比赛结束看官方WP发现可以直接用短标签写马......
 
-![VNCTF Signin 解题截图（7/7）](./images/image-11.png)
+![VNCTF Signin 配图7](./images/image-11.png)
 
 [VNCTF Official WriteUp（PDF 下载）](/files/VNCTF-Official-WriteUp.pdf)
 
@@ -278,7 +278,7 @@ PS C:\\CTF\\Flask-Session-Cookie-Manager> python flask_session_cookie_manager3.p
 eyJhZG1pbiI6MX0.aZGGbg.sqtvkGbB5f94uOLXp-Ife-El9Dg
 ```
 
-![catcat-new 解题截图](./images/image-12.png)
+![catcat-new 配图1](./images/image-12.png)
 
 得到flag：`catctf{Catch_the_c4t_HaHa}`
 
@@ -478,7 +478,7 @@ if ($_SERVER['HTTP_X_FORWARDED_FOR'] === '127.0.0.1') {
 
 这样只需要抓包让XFF为`127.0.0.1`同时构造payload就可以利用preg_replace达成RCE了
 
-![ics-05 解题截图](./images/image-13.png)
+![ics-05 配图1](./images/image-13.png)
 
 达成RCE，接下来查找flag即可
 
@@ -529,11 +529,11 @@ md5(cookie_secret+md5(filename))
 
 发现msg处为模板注入的洞口，但过滤了很多，小括号中括号竖杠下划线全都过滤了，感觉是只能想办法找cookie_secret了，于是去github下载tornado源码再查找cookie_secret
 
-![easytornado 解题截图（1/2）](./images/image-15.png)
+![easytornado 配图1](./images/image-15.png)
 
 在这里发现`CookieTestRequestHandler`类在初始化时会生成一个`setting`字典，里面包含`cookie_secret`的键值对，而后面还调用过这个字典
 
-![easytornado 解题截图（2/2）](./images/image-16.png)
+![easytornado 配图2](./images/image-16.png)
 
 那我们就可以直接参考这个调用的手法，去在题目中找到`cookie_secret`了，由于下划线被过滤，就无法直接用`.get(cookie_secret)`了，但似乎直接用`{{handler.application.settings}}`会把整个字典打印出来
 
@@ -575,7 +575,7 @@ if __name__ == '__main__':
 
 <https://www.freebuf.com/articles/web/359392.html>
 
-![shrine 解题截图](./images/image-19.png)
+![shrine 配图1](./images/image-19.png)
 
 于是就可以直接构造payload如下读取到FLAG：
 
@@ -664,13 +664,13 @@ if($numbers[$i] == $win_numbers[$i])
 
 那就可以直接bp抓包改发送的数值全为`true`的数组重放就行了，只要遇到的数字不是0就算`same_count++`，多试几轮就攒够钱买flag了
 
-![lottery 解题截图](./images/image-20.png)
+![lottery 配图1](./images/image-20.png)
 
 ## fakebook
 
 进页面先拿dirsearch扫一下扫出来很多：
 
-![fakebook 解题截图（1/10）](./images/image-21.png)
+![fakebook 配图1](./images/image-21.png)
 
 扫到了`flag.php`，应该后面要用到
 
@@ -752,11 +752,11 @@ Fatal error: Call to a member function fetch_assoc() on boolean in /var/www/html
 
 再回去先看页面，有login登录和join注册两个按钮，由前面的代码审计知道blog要填个网址，join注册后显示
 
-![fakebook 解题截图（2/10）](./images/image-22.png)
+![fakebook 配图2](./images/image-22.png)
 
 点user发现进入之前扫到的`view.php`，这次多带了个参数`?no=1`，猜测这就是sql注入点，拿sqlmap测测
 
-![fakebook 解题截图（3/10）](./images/image-23.png)
+![fakebook 配图3](./images/image-23.png)
 
 有sql注入漏洞但只扫到布尔盲注和时间盲注，但注意到这里有个
 
@@ -781,7 +781,7 @@ injection not exploitable with NULL values. Do you want to try with a random int
 
 似乎能测出来是4列，联合查询也是injectable的，但似乎又被waf拦了，手动注入一下
 
-![fakebook 解题截图（4/10）](./images/image-24.png)
+![fakebook 配图4](./images/image-24.png)
 
 被拦，可能是匹配`UNION SELECT`，尝试绕过，一般就是注释，大小写，双写，用`/**/`似乎就成了
 
@@ -789,7 +789,7 @@ injection not exploitable with NULL values. Do you want to try with a random int
 ?no=2/**/**union/****/select/**/1,2,3,4#
 ```
 
-![fakebook 解题截图（5/10）](./images/image-25.png)
+![fakebook 配图5](./images/image-25.png)
 
 明显`username`处会回显，也就是2的位置，然后根据前面dirsearch扫到的`flag.php`，直接把第二列替换成MySQL的`LOAD_FILE`函数应该就能回显flag
 
@@ -797,7 +797,7 @@ injection not exploitable with NULL values. Do you want to try with a random int
 ?no=2/****/union/****/select/**/1,LOAD_FILE("/var/www/html/flag.php"),3,4#
 ```
 
-![fakebook 解题截图（6/10）](./images/image-26.png)
+![fakebook 配图6](./images/image-26.png)
 
 不过似乎并没用到反序列化，从网上学到还有很多方法，似乎用注册时抓的post包给sqlmap可以直接脱库
 
@@ -821,7 +821,7 @@ Table: users
 
 发现data都是序列化的内容，而前面测试联合查询的时候报错了反序列化
 
-![fakebook 解题截图（7/10）](./images/image-28.png)
+![fakebook 配图7](./images/image-28.png)
 
 no和1对上，username和user对上，passwd和123的哈希值对上，那data就和序列化内容对上，包含name、user、age、blog，那猜测`union select 1,2,3,4#`对应的就是`no,username,passwd,data`，于是尝试更改4的值让他反序列化成功
 
@@ -829,7 +829,7 @@ no和1对上，username和user对上，passwd和123的哈希值对上，那data�
 ?no=2 union/**/select 1,2,3,'O:8:"UserInfo":3:{s:4:"name";s:4:"user";s:3:"age";i:20;s:4:"blog";s:8:"user.com";}'#
 ```
 
-![fakebook 解题截图（8/10）](./images/image-30.png)
+![fakebook 配图8](./images/image-30.png)
 
 发现界面age和blog显示了data中的内容，于是就可以用SSRF服务端请求伪造漏洞，更改序列化内容中blog的值利用file文件协议去读取服务器上的`flag.php`文件
 
@@ -837,11 +837,11 @@ no和1对上，username和user对上，passwd和123的哈希值对上，那data�
 ?no=2 union/**/select 1,2,3,'O:8:"UserInfo":3:{s:4:"name";s:4:"user";s:3:"age";i:20;s:4:"blog";s:29:"file:///var/www/html/flag.php";}'#
 ```
 
-![fakebook 解题截图（9/10）](./images/image-31.png)
+![fakebook 配图9](./images/image-31.png)
 
 解码同样得到flag
 
-![fakebook 解题截图（10/10）](./images/image-32.png)
+![fakebook 配图10](./images/image-32.png)
 
 ## 题目名称-文件包含
 
@@ -1008,21 +1008,21 @@ KOI8-U*
 ArmSCII-8
 ```
 
-![题目名称-文件包含 解题截图](./images/image.png)
+![题目名称-文件包含 配图1](./images/image.png)
 
 ## Confusion1
 
 进入页面首页显示被蛇缠住的大象，大概是python和php
 
-![Confusion1 解题截图（1/5）](./images/image-1.png)
+![Confusion1 配图1](./images/image-1.png)
 
-![Confusion1 解题截图（2/5）](./images/image-2.png)
+![Confusion1 配图2](./images/image-2.png)
 
-![Confusion1 解题截图（3/5）](./images/202603-image-3.png)
+![Confusion1 配图3](./images/202603-image-3.png)
 
 顶栏有login和register两个页面可以进入但都显示not found，源码提示了flag位置
 
-![Confusion1 解题截图（4/5）](./images/202603-image-4.png)
+![Confusion1 配图4](./images/202603-image-4.png)
 
 但这里的not found报错原样回显了URL `/login.php`
 
@@ -1035,7 +1035,7 @@ Apache/2.4.10 (Debian) Server at 61.147.171.103 Port 53160
 
 又结合有关python、php的提示，尝试ssti模板注入
 
-![Confusion1 解题截图（5/5）](./images/image-5.png)
+![Confusion1 配图5](./images/image-5.png)
 
 回显49，于是尝试一些payload发现 `|` 、`class`、`read`在大括号中被过滤，`globals`、`base`在url中被过滤，那就没法用`attr`，只能用`mro`以及中括号加`request`的方式去找能用的类
 

@@ -576,7 +576,7 @@ print()
 flag: scriptctf?r3v3ng3?1337?15f474e8fed0???
 ```
 
-![scriptCTF 平台上 wpm-game2 提交 flag 后显示 Correct](./images/384a2ef55939f869fd9004c9e824498e.png)
+![wpm-game2 配图1](./images/384a2ef55939f869fd9004c9e824498e.png)
 
 ### Flag
 

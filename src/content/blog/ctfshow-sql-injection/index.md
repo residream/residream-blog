@@ -94,7 +94,7 @@ replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(
 
 但发现直接在网页提交一直出错找不到原因，抓包后发现get传参被截断，因此拿burpsuite编码+发包得到最终的flag
 
-![Burp Repeater 中编码后的 union 注入请求与响应中的 flag](./images/burp-union-flag.png)
+![web174 配图1](./images/burp-union-flag.png)
 
 ### web175
 
@@ -120,7 +120,7 @@ $sql = "select username,password from ctfshow_user5 where username !='flag' and 
 
 但不知道为啥我一直没有复现成功，换种方式尝试时间盲注发现存在漏洞
 
-![用 1' and sleep(5)--+ 触发延时，Network 面板显示请求耗时 5.03 秒](./images/time-blind-sleep5.webp)
+![web175 配图1](./images/time-blind-sleep5.webp)
 
 由于题目说了查询语句如下，所以知道表名是ctfshow_user5，要爆的是username=flag对应的password值
 

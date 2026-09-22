@@ -13,9 +13,9 @@ draft: false
 
 打完渗透赛一周后就打了CTF，依旧被gpt带飞rank6，但似乎赛后前面有人跑路了然后最终拿了rank5，不过三等奖还是没变化，但是ak了misc又拿了个misc专项奖喵！可惜最近在期末月复习没啥时间写blog，先放点简单的writeup吧
 
-![2026 SpiritGame CTF 赛道积分榜：前十队伍的得分走势图与排名表](./images/fa09d35d93d568bd99c99d164e5f6b34_720.jpg)
+![2026 SpiritGame CTF赛道 配图1](./images/fa09d35d93d568bd99c99d164e5f6b34_720.jpg)
 
-![2026 SpiritGame CTF 赛道题目页：多道题显示已解出，队伍 Residream 4808 分、排名第 6](./images/e4dc1f6a46b170669d0552e457b0af76_720.jpg)
+![2026 SpiritGame CTF赛道 配图2](./images/e4dc1f6a46b170669d0552e457b0af76_720.jpg)
 
 ## ez_sql
 

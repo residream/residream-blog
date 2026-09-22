@@ -481,7 +481,7 @@ Payload：
 
 抓包结果：
 
-![web328 抓包结果：携带管理员 Cookie 请求用户列表接口，响应返回各用户数据](./images/web328-user-management-1.png)
+![web328 配图1](./images/web328-user-management-1.png)
 
 #### web329
 
@@ -497,7 +497,7 @@ Payload：
 
 通过开发者工具可以看到，用户管理页面中用于显示用户信息的元素使用了 `layui-table-cell` 类：
 
-![开发者工具检查元素：显示「仅管理员可见」的单元格是 div.layui-table-cell](./images/web329-layui-table-cell.png)
+![web329 配图1](./images/web329-layui-table-cell.png)
 
 首先，使用 jQuery 选中所有 `class` 中包含 `layui-table-cell` 的元素：
 
@@ -559,7 +559,7 @@ PHP 会自动解析 URL 编码，最终便可以在接收文件中读取 Flag。
 
 这一题新增了修改密码功能。抓包后可以发现，页面通过 GET 参数 `p` 把新密码提交给 `/api/change.php`：
 
-![web330 抓包：修改密码请求通过 GET 参数 p 把新密码提交到 /api/change.php](./images/web330-change-password-request.png)
+![web330 配图1](./images/web330-change-password-request.png)
 
 因此，可以让管理员浏览器访问该接口，直接把管理员密码修改为 `123456`：
 
