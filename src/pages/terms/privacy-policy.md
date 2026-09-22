@@ -29,6 +29,7 @@ back: '/terms'
 
 - 字体服务 Fontshare
 - 统计接口 Substats，用于展示 GitHub、Steam 等平台的公开数字
+- 语录接口 一言（hitokoto），用于首页底部的随机句子
 
 这些服务的数据处理遵循各自的隐私政策。
 
