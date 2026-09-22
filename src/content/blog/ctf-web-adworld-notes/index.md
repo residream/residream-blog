@@ -46,7 +46,7 @@ draft: false
 
 ![img](./images/image-11.png)
 
-[VNCTF Official WriteUp（PDF 下载）](https://residream.com/wp-content/uploads/2026/02/VNCTF-Official-WriteUp.pdf)
+[VNCTF Official WriteUp（PDF 下载）](/files/VNCTF-Official-WriteUp.pdf)
 
 ## catcat-new
 
