@@ -209,7 +209,7 @@ gopher://127.0.0.1:3306/_%a3%00%00%01%85%a6%ff%01%00%00%00%01%21%00%00%00%00%00%
 
 成功RCE
 
-![img](./images/image-6.png)
+![web359 解题结果：Burp Repeater 中的请求与响应](./images/image-6.png)
 
 ## web360
 
@@ -246,4 +246,4 @@ gopher://127.0.0.1:6379/_%2A1%0D%0A%248%0D%0Aflushall%0D%0A%2A3%0D%0A%243%0D%0As
 
 也需要url encode一次，然后成功RCE
 
-![img](./images/web360-redis-rce.png)
+![web360 解题结果：HackBar 发送请求后页面回显的 Redis 数据](./images/web360-redis-rce.png)

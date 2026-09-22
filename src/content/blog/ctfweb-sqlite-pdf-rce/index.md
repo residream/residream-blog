@@ -528,7 +528,7 @@ Catalog
 
 用 Mermaid 表示会更直观：
 
-![img](./images/1-1.png)
+![PDF 对象树：Catalog 根对象 → Pages 页面树 → Page 页面对象，Page 下为 Contents 内容流与 Resources 资源字典（含 Font、XObject）](./images/1-1.png)
 
 注意：这棵树不是文件里的物理顺序，而是**引用关系**。对象可以写在文件任何位置，只要 `xref` 能找到它。
 
@@ -994,7 +994,7 @@ ET              End Text，结束文字绘制
 
 所以这棵对象树可以画成：
 
-![img](./images/2-1.png)
+![示例 PDF 的对象树：trailer /Root → Catalog → Pages → Page，Page 引用 Resources（再引用 Font）与 Contents](./images/2-1.png)
 
 这里最重要的几个语法点：
 

@@ -530,7 +530,7 @@ print("\n");
 
 成功得到最终 `flag`
 
-![img](./images/image-20260824175006775.png)
+![PHP 2003：用 HackBar 发送 POST 请求后，页面顶部显示 flag](./images/image-20260824175006775.png)
 
 ### Flag
 
@@ -666,7 +666,7 @@ print(totp.now())
 
 拿到验证码正式登陆进 `admin` ，然后拿着 `session` 爆破 `/feedback/view?id=` 路由，在 `id=24` 找到了 `flag`
 
-![img](./images/image-20260823190204269.png)
+![Dumb-factor Authentication：Burp Intruder 遍历 /feedback/view?id=，按 brunner{ 过滤后在 id=24 的响应中找到 flag](./images/image-20260823190204269.png)
 
 ### Flag
 
@@ -904,7 +904,7 @@ brunner{00ps_th4t_p4g3_w4s_1nt3rn4l}
 
 伪造 `role` 为 `admin` 的 `jwt` 在 `devtools` 里改 `Cookie` 后访问 `/admin` 即可看到 `flag`
 
-![img](./images/image-20260823202530907-1.png)
+![Secret Event：在开发者工具中把 session Cookie 换成伪造的 JWT 后访问 /admin，页面以噪点图形式显示 flag](./images/image-20260823202530907-1.png)
 
 ### Flag
 
