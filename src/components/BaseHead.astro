@@ -95,3 +95,14 @@ const socialImageURL = new URL(ogImage ? ogImage : config.socialCard, Astro.url)
     </script>
   )
 }
+
+{
+  prod && (
+    <script
+      is:inline
+      id='counterscale-script'
+      data-site-id='residream'
+      src='https://stats.residream.com/tracker.js'
+      defer></script>
+  )
+}
