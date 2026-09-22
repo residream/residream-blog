@@ -185,10 +185,6 @@ export const terms: CardListData = {
       link: '/terms/privacy-policy'
     },
     {
-      title: 'Terms and Conditions',
-      link: '/terms/terms-and-conditions'
-    },
-    {
       title: 'Copyright',
       link: '/terms/copyright'
     },

@@ -2,9 +2,15 @@
 layout: '@/layouts/IndividualPage.astro'
 
 title: 'Disclaimer'
-description: 'Last updated: 2024-11-26'
-language: 'En'
+description: '最后更新：2026-09-22'
+language: 'Zh'
 back: '/terms'
 ---
 
-It may be recommended to generate policies from [PolicyMaker.io](https://policymaker.io).
+本站内容仅供网络安全学习与技术交流使用。
+
+文中涉及的漏洞原理、测试方法与工具，均在授权环境下进行，包括 CTF 赛题环境、本地靶机，以及已获得明确授权的测试目标。
+
+请勿将本站内容用于未授权的测试或任何违法用途。由此产生的一切后果由使用者自行承担，与本站及作者无关。
+
+文章基于撰写时的环境与理解，可能随时间失效或存在疏漏，仅供参考，不构成任何形式的保证。
