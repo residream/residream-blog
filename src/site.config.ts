@@ -67,15 +67,21 @@ export const theme: ThemeUserConfig = {
         link: 'https://beian.miit.gov.cn/',
         style: 'text-sm' // Uno/TW CSS class
       },
-      // Privacy Policy link
+      // Site policy link
       {
         title: 'Site Policy',
         link: '/terms',
+        style: 'text-sm'
+      },
+      // Contact link
+      {
+        title: 'Contact Me',
+        link: 'mailto:me@residream.dev',
         pos: 2 // position set to 2 will be appended to copyright line
       }
     ],
     /** Enable displaying a “Astro & Pure theme powered” link in your site’s footer. */
-    credits: true,
+    credits: false,
     /** Optional details about the social media accounts for this site. */
     social: [
       { icon: 'github', label: 'GitHub', href: 'https://github.com/residream' },

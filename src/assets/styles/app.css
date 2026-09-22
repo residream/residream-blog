@@ -46,3 +46,9 @@ a {
     color: hsl(var(--primary) / var(--un-text-opacity, 1));
   }
 }
+
+/* Footer: plain links, no underline */
+footer a[href] {
+  text-decoration: none;
+  font-weight: 400;
+}
