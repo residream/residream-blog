@@ -27,7 +27,7 @@ for arg in "$@"; do
     --yes) YES=1 ;;
     --slug=*) SLUG="${arg#--slug=}" ;;
     -h | --help) usage; exit 0 ;;
-    -*) echo "未知参数：$arg（见 --help）" >&2; exit 2 ;;
+    -*) echo "未知参数：${arg}（见 --help）" >&2; exit 2 ;;
     *) [ -z "$POST" ] || { echo "一次只能导入一篇 md" >&2; exit 2; }; POST="$arg" ;;
   esac
 done
@@ -182,7 +182,7 @@ fi
 if [ "$IMPORT_ONLY" = 0 ]; then
   : "${DEPLOY_HOST:?在 .deploy.env 里设置 DEPLOY_HOST（见 .deploy.env.example）}"
   step "检查 SSH：$DEPLOY_HOST"
-  remote true 2>/dev/null || die "无法登录 $DEPLOY_HOST。
+  remote true 2>/dev/null || die "无法登录 ${DEPLOY_HOST}。
   如果是重启后密钥没加载，运行：ssh-add --apple-use-keychain ~/.ssh/id_ed25519"
   echo "  正常"
 fi
@@ -206,7 +206,7 @@ if [ "$IMPORT_ONLY" = 1 ]; then
   exit 0
 fi
 RELEASE="$(git log -1 --format='%h %s')"
-if [ -n "$(git status --porcelain)" ]; then RELEASE="$RELEASE（含未提交改动）"; fi
+if [ -n "$(git status --porcelain)" ]; then RELEASE="${RELEASE}（含未提交改动）"; fi
 
 if [ "$SKIP_BUILD" = 0 ]; then
   step "构建 ${RELEASE%% *}"
@@ -229,7 +229,7 @@ confirm "  确认发布到线上？" || { echo "  已取消，线上没有改动
 step "上传到 $DEPLOY_HOST:~/$STAGE_DIR"
 rsync -azc --delete dist/ "$DEPLOY_HOST:$STAGE_DIR/"
 
-step "发布到 $WEB_ROOT（当前线上版本备份到 $WEB_ROOT.prev）"
+step "发布到 ${WEB_ROOT}（当前线上版本备份到 ${WEB_ROOT}.prev）"
 remote_in bash -s <<EOF
 set -e
 sudo mkdir -p '$WEB_ROOT' '$WEB_ROOT.prev'

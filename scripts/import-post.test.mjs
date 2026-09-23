@@ -269,3 +269,82 @@ test('deploy CLI previews without SSH or git changes, then imports locally and s
   assert.match(dirty.stderr, /其他未提交/)
   assert.equal(git('rev-list', '--count', 'HEAD'), '2')
 })
+
+test('deployment completes on system Bash with mocked upload, backup, verification and cache purge', async (t) => {
+  const f = await fixture(t)
+  await put(
+    path.join(f.repoRoot, 'scripts/deploy.sh'),
+    await fs.readFile(path.join(project, 'scripts/deploy.sh'))
+  )
+  await put(path.join(f.repoRoot, '.gitignore'), 'dist/\n')
+  const git = (...args) => execFileSync('git', args, { cwd: f.repoRoot, encoding: 'utf8' }).trim()
+  git('init', '-q')
+  git('config', 'user.name', 'Deploy Test')
+  git('config', 'user.email', 'deploy-test@example.invalid')
+  git('add', '.')
+  git('commit', '-qm', 'fixture')
+  await put(path.join(f.repoRoot, 'dist/index.html'), '<script id="counterscale-script"></script>')
+  await put(path.join(f.repoRoot, 'dist/404.html'), 'not found')
+  await put(path.join(f.repoRoot, 'dist/blog/example/index.html'), 'article')
+  const bin = path.join(f.root, 'bin')
+  const log = path.join(f.root, 'remote.log')
+  const stubs = {
+    ssh: `#!/bin/sh
+if [ "$DEPLOY_TEST_SSH_FAIL" = 1 ]; then exit 1; fi
+printf 'ssh %s\\n' "$*" >> "$DEPLOY_TEST_LOG"
+case "$*" in *"bash -s"*|*"tee "*) cat >> "$DEPLOY_TEST_LOG" ;; esac
+`,
+    rsync: `#!/bin/sh
+printf 'rsync %s\\n' "$*" >> "$DEPLOY_TEST_LOG"
+case "$*" in *--itemize-changes*) printf '>f+++++++++ index.html\\n' ;; esac
+`,
+    curl: `#!/bin/sh
+printf 'purge\\n' >> "$DEPLOY_TEST_LOG"
+printf '{"success":true}'
+`
+  }
+  for (const [name, script] of Object.entries(stubs)) {
+    const file = await put(path.join(bin, name), script)
+    await fs.chmod(file, 0o755)
+  }
+  const env = {
+    ...process.env,
+    PATH: `${bin}${path.delimiter}${process.env.PATH}`,
+    DEPLOY_HOST: 'fixture.invalid',
+    WEB_ROOT: '/srv/blog',
+    SITE_HOST: 'example.invalid',
+    STAGE_DIR: 'blog-stage',
+    CF_API_TOKEN: 'fixture-token',
+    CF_ZONE_ID: 'fixture-zone',
+    DEPLOY_TEST_LOG: log,
+    DEPLOY_TEST_SSH_FAIL: '0',
+    LANG: 'en_US.UTF-8',
+    LC_ALL: 'en_US.UTF-8'
+  }
+  const run = (args, overrides = {}) =>
+    spawnSync('/bin/bash', ['scripts/deploy.sh', ...args], {
+      cwd: f.repoRoot,
+      encoding: 'utf8',
+      env: { ...env, ...overrides }
+    })
+  const flags = ['--skip-build', '--yes']
+  const published = run(flags)
+  assert.equal(published.status, 0, published.stderr)
+  assert.match(published.stdout, /发布到 \/srv\/blog（当前线上版本备份到 \/srv\/blog.prev）/)
+  assert.match(published.stdout, /已发布：/)
+  const calls = await fs.readFile(log, 'utf8')
+  assert.match(calls, /sudo rsync -a --delete '\/srv\/blog\/' '\/srv\/blog.prev\/'/)
+  assert.match(calls, /check \/ 200/)
+  assert.match(calls, /check '\/blog\/example' 200/)
+  assert.match(calls, /purge/)
+  await put(path.join(f.repoRoot, 'uncommitted.txt'), 'local change')
+  const dirty = run([...flags, '--allow-dirty'])
+  assert.equal(dirty.status, 0, dirty.stderr)
+  assert.match(dirty.stdout, /（含未提交改动）/)
+  const unknown = run(['--unknown'])
+  assert.equal(unknown.status, 2)
+  assert.match(unknown.stderr, /未知参数：--unknown（见 --help）/)
+  const offline = run([...flags, '--allow-dirty'], { DEPLOY_TEST_SSH_FAIL: '1' })
+  assert.equal(offline.status, 1)
+  assert.match(offline.stderr, /无法登录 fixture.invalid。/)
+})
