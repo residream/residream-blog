@@ -39,3 +39,6 @@ ignore.*
 bunfig.toml
 /src/content/blog/test.*
 /test/
+
+# Local deploy settings (server address); see .deploy.env.example
+.deploy.env
