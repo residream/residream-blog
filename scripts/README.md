@@ -36,6 +36,16 @@ draft: true
 - 不写头图时，使用正文第一张本地图片；完全没有本地图片时使用站点默认色。写 `heroImage: false` 可以不设头图。
 - 没有 frontmatter 的普通 Markdown 也能导入：用一级标题或文件名作标题，从第一段提取描述。标题最多 60 字，描述最多 160 字。
 
+## GitHub 项目卡片
+
+普通 `.md` 也可以插入主题的项目卡片，复制这一行并修改仓库名和链接即可：
+
+```html
+<github-card data-repo="cworld1/astro-theme-pure"><a href="https://github.com/cworld1/astro-theme-pure">astro-theme-pure</a></github-card>
+```
+
+卡片自动加载项目简介、Stars、Forks 和许可证；GitHub API 暂时不可用时仍保留项目链接。
+
 ## 图片放在哪里
 
 优先按 Markdown 中的路径查找，支持相对路径、绝对路径、`file://` 地址、中文、空格和 URL 编码。找不到时依次递归查找：
