@@ -31,19 +31,23 @@ WordPress 的文章地址是 `/index.php/2026/09/05/26-9-1/` 这种格式，迁�
 
 ## 部署脚本
 
-迁到静态站后，把找图、取色、构建和上传都收进了脚本。平时只需要写好 Markdown，再运行：
+迁到静态站之后，写文章本身没什么变化，但发布前要做的事变多了：整理图片、复制头图、填主题色、改草稿状态，然后构建、上传、清缓存
+
+于是借助 Astra 把这些操作收进了部署脚本，现在只需要把 Markdown 写好，再运行：
 
 ```bash
 bun run deploy "$HOME/Desktop/Blog/博客翻新日志：从-WordPress-迁移到-Astro.md"
 ```
 
-脚本会按 Markdown 中的路径查找图片，找不到再搜索文章目录和配置的图片库，复制图片时一起修正引用。头图用 `sharp` 缩小后提取主色，自动填入 `heroImage.color`，不用再手动挑色
+脚本会按 Markdown 中的路径查找图片，找不到再搜索文章目录和配置的图片库，复制图片时一起修正引用，头图用 `sharp` 缩小后提取主色，自动填入 `heroImage.color`，不用再手动挑色
 
-日期和颜色可以留空或写 `xxxxxx` 占位；新文章补上当前时间，更新文章保留原发布时间，`draft` 自动改成 `false`。已经手动填好的有效日期和颜色会保留
+日期和颜色可以留空或写 `xxxxxx` 占位；新文章补上当前时间，更新文章保留原发布时间，`draft` 自动改成 `false` ，已经手动填好的有效日期和颜色会保留
 
 导入前会列出图片、主题色和文章目录供确认。确认后提交文章、构建网站，再预览线上差异；上线时先备份，完成后检查页面并清除 Cloudflare 缓存
 
-只想检查导入结果就加 `--dry-run`，只同步到本地仓库就加 `--import-only`。Blog 里的原稿不会被改动，更多选项放在[部署说明](https://github.com/residream/residream-blog/blob/main/scripts/README.md)里
+只想检查导入结果就加 `--dry-run`，只同步到本地仓库就加 `--import-only` ，Blog 里的原稿不会被改动，更多选项放在[部署说明](https://github.com/residream/residream-blog/blob/main/scripts/README.md)里
+
+最后在上线前又让 Astra 做了一轮项目检查和依赖安全扫描喵
 
 
 ## 致谢
