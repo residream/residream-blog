@@ -1,5 +1,5 @@
 ---
-import { Button, Icon } from 'astro-pure/user'
+import { Button, Collapse, Icon } from 'astro-pure/user'
 import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
 import Sponsorship from '@/components/projects/Sponsorship.astro'
@@ -7,6 +7,7 @@ import alipay from '@/assets/alipay-qrcode.jpg'
 import wechat from '@/assets/wechat-qrcode.jpg'
 
 const headings = [
+  { depth: 2, slug: 'applications', text: 'Applications' },
   { depth: 2, slug: 'programs', text: 'Programs' },
   { depth: 2, slug: 'sponsorship', text: 'Sponsorship' }
 ]
@@ -32,7 +33,7 @@ const headings = [
     <Icon class='size-5' name='receive-money' slot='before' />
   </Button>
 
-  <h2 id='programs'>Programs</h2>
+  <h2 id='applications'>Applications</h2>
   <ProjectSection
     projects={[
       {
@@ -42,7 +43,39 @@ const headings = [
           { type: 'github', href: 'https://github.com/residream/residream-blog' },
           { type: 'site', href: 'https://residream.com' }
         ]
-      },
+      }
+    ]}
+  />
+  <Collapse title='Private projects'>
+    <ProjectSection
+      projects={[
+        {
+          name: '💬 Waline Comment System',
+          description: 'Self-hosted comments for this blog, powered by Waline',
+          links: [{ type: 'site', href: 'https://waline.residream.com' }]
+        },
+        {
+          name: '📈 Visitor analytics',
+          description: 'Self-hosted web analytics, powered by Counterscale',
+          links: [{ type: 'site', href: 'https://stats.residream.com' }]
+        },
+        {
+          name: '📊 Website status',
+          description: 'Uptime monitoring and a public status page, powered by UptimeFlare',
+          links: [{ type: 'site', href: 'https://status.residream.com' }]
+        },
+        {
+          name: '🪄 Online tools',
+          description: 'Encoding, decoding and data analysis tools, powered by CyberChef',
+          links: [{ type: 'site', href: 'https://chef.residream.com' }]
+        }
+      ]}
+    />
+  </Collapse>
+
+  <h2 id='programs'>Programs</h2>
+  <ProjectSection
+    projects={[
       {
         name: '🏥 HIS Course Design',
         description: 'A C-based Hospital Information System for JLU course design',
