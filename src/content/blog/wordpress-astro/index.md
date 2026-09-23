@@ -52,7 +52,19 @@ bun run deploy "$HOME/Desktop/Blog/博客翻新日志：从-WordPress-迁移到-
 
 ## 致谢
 
-- 主题：[astro-pure](https://github.com/cworld1/astro-theme-pure)，作者 CWorld
+感谢 Orac1e 的博客源码和这些开源项目，让主站、评论、状态页、访问统计和在线工具都能顺利搭起来：
+
+<github-card data-repo="Byforacle/astro-blog"><a href="https://github.com/Byforacle/astro-blog">Orac1e · 博客源码</a></github-card>
+
+<github-card data-repo="cworld1/astro-theme-pure"><a href="https://github.com/cworld1/astro-theme-pure">astro-theme-pure · 博客主题</a></github-card>
+
+<github-card data-repo="walinejs/waline"><a href="https://github.com/walinejs/waline">Waline · 评论系统</a></github-card>
+
+<github-card data-repo="lyc8503/UptimeFlare"><a href="https://github.com/lyc8503/UptimeFlare">UptimeFlare · 网站状态</a></github-card>
+
+<github-card data-repo="benvinegar/counterscale"><a href="https://github.com/benvinegar/counterscale">Counterscale · 访问统计</a></github-card>
+
+<github-card data-repo="gchq/CyberChef"><a href="https://github.com/gchq/CyberChef">CyberChef · 在线工具</a></github-card>
+
 - 参考：[orac1e](https://orac1e.me) 和 [CWorld](https://cworld0.com) 的博客
 - 头图：画师 [catzz](https://space.bilibili.com/308124) 的作品
-
