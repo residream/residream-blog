@@ -7,8 +7,7 @@ import alipay from '@/assets/alipay-qrcode.jpg'
 import wechat from '@/assets/wechat-qrcode.jpg'
 
 const headings = [
-  { depth: 2, slug: 'applications', text: 'Applications' },
-  { depth: 2, slug: 'programs', text: 'Programs' },
+  { depth: 2, slug: 'projects', text: 'Projects' },
   { depth: 2, slug: 'sponsorship', text: 'Sponsorship' }
 ]
 ---
@@ -33,7 +32,7 @@ const headings = [
     <Icon class='size-5' name='receive-money' slot='before' />
   </Button>
 
-  <h2 id='applications'>Applications</h2>
+  <h2 id='projects'>Projects</h2>
   <ProjectSection
     projects={[
       {
@@ -43,6 +42,11 @@ const headings = [
           { type: 'github', href: 'https://github.com/residream/residream-blog' },
           { type: 'site', href: 'https://residream.com' }
         ]
+      },
+      {
+        name: '🏥 HIS Course Design',
+        description: 'A C-based Hospital Information System for JLU course design',
+        links: [{ type: 'github', href: 'https://github.com/residream/his-course-design' }]
       }
     ]}
   />
@@ -72,17 +76,6 @@ const headings = [
       ]}
     />
   </Collapse>
-
-  <h2 id='programs'>Programs</h2>
-  <ProjectSection
-    projects={[
-      {
-        name: '🏥 HIS Course Design',
-        description: 'A C-based Hospital Information System for JLU course design',
-        links: [{ type: 'github', href: 'https://github.com/residream/his-course-design' }]
-      }
-    ]}
-  />
 
   <h2 id='sponsorship'>Sponsorship</h2>
   <p>If my notes or writeups helped you, a coffee is always welcome.</p>
