@@ -12,6 +12,7 @@ import { MediumZoom } from 'astro-pure/advanced'
 import { ArticleBottom, Copyright, Hero, TOC } from 'astro-pure/components/pages'
 import PageLayout from '@/layouts/ContentLayout.astro'
 import { Comment, PageInfo } from '@/components/waline'
+import { splitGithubCards } from '@/utils/github-cards'
 
 import GithubCard from '../../packages/pure/components/advanced/GithubCard.astro'
 
@@ -40,6 +41,9 @@ const socialImage = heroImage
   : config.socialCard
 const articleDate = publishDate.toISOString()
 const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--un-text-opacity))'
+const contentParts = body?.includes('<github-card')
+  ? splitGithubCards(await Astro.slots.render('default'))
+  : null
 ---
 
 <PageLayout
@@ -55,7 +59,15 @@ const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--un-tex
     </Fragment>
   </Hero>
 
-  <slot />
+  {
+    contentParts ? (
+      contentParts.map((part) =>
+        part.type === 'repo' ? <GithubCard repo={part.repo} /> : <Fragment set:html={part.html} />
+      )
+    ) : (
+      <slot />
+    )
+  }
 
   <Fragment slot='bottom'>
     {/* Copyright */}
@@ -69,4 +81,3 @@ const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--un-tex
 </PageLayout>
 
 {config.integ.mediumZoom.enable && <MediumZoom />}
-{body?.includes('<github-card') && <GithubCard />}

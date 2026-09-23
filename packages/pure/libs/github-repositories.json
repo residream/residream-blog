@@ -1,0 +1,68 @@
+{
+  "byforacle/astro-blog": {
+    "fetchedAt": "2026-09-23T09:48:59.661014Z",
+    "data": {
+      "description": "⭐ A simple, fast and powerful blog & document theme built by Astro",
+      "stars": 2,
+      "forks": 0,
+      "language": "MDX",
+      "license": "Apache-2.0",
+      "avatar": "https://avatars.githubusercontent.com/u/132767562?v=4"
+    }
+  },
+  "benvinegar/counterscale": {
+    "fetchedAt": "2026-09-23T09:48:59.661014Z",
+    "data": {
+      "description": "Scalable web analytics you run yourself on Cloudflare",
+      "stars": 2147,
+      "forks": 131,
+      "language": "TypeScript",
+      "license": "MIT",
+      "avatar": "https://avatars.githubusercontent.com/u/2153?v=4"
+    }
+  },
+  "cworld1/astro-theme-pure": {
+    "fetchedAt": "2026-09-23T09:48:59.661014Z",
+    "data": {
+      "description": "⭐ A simple, fast and powerful blog & document theme built by Astro",
+      "stars": 1083,
+      "forks": 275,
+      "language": "Astro",
+      "license": "Apache-2.0",
+      "avatar": "https://avatars.githubusercontent.com/u/37377181?v=4"
+    }
+  },
+  "gchq/cyberchef": {
+    "fetchedAt": "2026-09-23T09:48:59.661014Z",
+    "data": {
+      "description": "The Cyber Swiss Army Knife - a web app for encryption, encoding, compression and data analysis",
+      "stars": 35924,
+      "forks": 4156,
+      "language": "JavaScript",
+      "license": "Apache-2.0",
+      "avatar": "https://avatars.githubusercontent.com/u/15800240?v=4"
+    }
+  },
+  "lyc8503/uptimeflare": {
+    "fetchedAt": "2026-09-23T09:48:59.661014Z",
+    "data": {
+      "description": "✔ Free and serverless uptime monitoring / status page on Cloudflare Workers, with Geo-specific checks",
+      "stars": 3829,
+      "forks": 603,
+      "language": "TypeScript",
+      "license": "Apache-2.0",
+      "avatar": "https://avatars.githubusercontent.com/u/36782264?v=4"
+    }
+  },
+  "walinejs/waline": {
+    "fetchedAt": "2026-09-23T09:48:59.661014Z",
+    "data": {
+      "description": "💬 A Simple, Safe Comment System",
+      "stars": 3122,
+      "forks": 640,
+      "language": "JavaScript",
+      "license": "GPL-2.0",
+      "avatar": "https://avatars.githubusercontent.com/u/76174058?v=4"
+    }
+  }
+}

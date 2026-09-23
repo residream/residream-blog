@@ -44,7 +44,7 @@ draft: true
 <github-card data-repo="cworld1/astro-theme-pure"><a href="https://github.com/cworld1/astro-theme-pure">astro-theme-pure</a></github-card>
 ```
 
-卡片自动加载项目简介、Stars、Forks 和许可证；GitHub API 暂时不可用时仍保留项目链接。
+构建时读取项目简介、Stars、Forks 和许可证，缓存 24 小时，直接写入页面。读者无需请求 GitHub API；接口暂时不可用时沿用缓存，首次构建也可使用已保存的公开项目资料。运行时缓存位于 `.astro/github-cards/`，不会提交到仓库。
 
 ## 图片放在哪里
 
