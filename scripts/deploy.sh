@@ -41,8 +41,10 @@ remote() { ssh -o BatchMode=yes -o ConnectTimeout=10 "$DEPLOY_HOST" "$@"; }
 
 # Checks run on the server against nginx directly, bypassing Cloudflare.
 verify() {
-  local sample
-  sample="$(find dist/blog -mindepth 1 -maxdepth 1 -type d ! -name '[0-9]*' | head -1 | sed 's|^dist||')"
+  local sample="" d
+  for d in dist/blog/*/; do
+    case "$(basename "$d")" in [0-9]*) ;; *) sample="/blog/$(basename "$d")"; break ;; esac
+  done
   remote bash -s <<EOF
 set -e
 code() { curl -s -o /dev/null -w '%{http_code}' --resolve '$SITE_HOST:443:127.0.0.1' "https://$SITE_HOST\$1"; }
@@ -69,7 +71,7 @@ purge_cache() {
   fi
   resp="$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
     -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \
-    --data '{"purge_everything":true}')"
+    --data '{"purge_everything":true}' || true)"
   case "$resp" in
     *'"success":true'*) echo "  Cloudflare cache purged" ;;
     *) warn "the release is live, but the Cloudflare purge failed: $resp"; return 1 ;;
@@ -89,14 +91,15 @@ if [ "$ROLLBACK" = 1 ]; then
   step "Verifying"
   verify || die "checks failed after the rollback"
   step "Purging the Cloudflare cache"
-  purge_cache
+  purge_cache || exit 1
   exit 0
 fi
 
 if [ "$ALLOW_DIRTY" = 0 ] && [ -n "$(git status --porcelain)" ]; then
   die "the working tree has uncommitted changes; commit them first or pass --allow-dirty"
 fi
-RELEASE="$(git log -1 --format='%h %s')$([ -n "$(git status --porcelain)" ] && echo ' (+ uncommitted changes)')"
+RELEASE="$(git log -1 --format='%h %s')"
+if [ -n "$(git status --porcelain)" ]; then RELEASE="$RELEASE (+ uncommitted changes)"; fi
 
 if [ "$SKIP_BUILD" = 0 ]; then
   step "Building ${RELEASE%% *}"
@@ -113,7 +116,7 @@ if [ "$DRY_RUN" = 1 ]; then
   step "Changes compared with the live site (dry run, nothing is written)"
   changes="$(rsync -azcn --delete --exclude=/.release --itemize-changes dist/ "$DEPLOY_HOST:$WEB_ROOT/" | grep -v '/$' | grep -v '^\.' || true)"
   if [ -z "$changes" ]; then echo "  no changes"; else
-    printf '%s\n' "$changes" | head -40 | sed 's/^/  /'
+    printf '%s\n' "$changes" | sed -n '1,40s/^/  /p'
     echo "  ($(printf '%s\n' "$changes" | wc -l | tr -d ' ') changed files)"
   fi
   exit 0
@@ -128,16 +131,18 @@ set -e
 sudo mkdir -p '$WEB_ROOT' '$WEB_ROOT.prev'
 sudo rsync -a --delete '$WEB_ROOT/' '$WEB_ROOT.prev/'
 sudo rsync -a --delete ~/'$STAGE_DIR'/ '$WEB_ROOT/'
-printf '%s\n' '$(printf '%s' "$RELEASE" | sed "s/'/'\\\\''/g") · $(date '+%Y-%m-%d %H:%M')' | sudo tee '$WEB_ROOT/.release' >/dev/null
 sudo chown -R root:root '$WEB_ROOT'
 sudo find '$WEB_ROOT' -type d -exec chmod 755 {} +
 sudo find '$WEB_ROOT' -type f -exec chmod 644 {} +
 EOF
+printf '%s · %s\n' "$RELEASE" "$(date '+%Y-%m-%d %H:%M')" | remote "sudo tee '$WEB_ROOT/.release' >/dev/null"
 
 step "Verifying"
 verify || die "checks failed; to put the previous release back run:  bun run deploy --rollback"
 
 step "Purging the Cloudflare cache"
-purge_cache
+status=0
+purge_cache || status=1
 echo
 echo "Deployed: $RELEASE"
+exit "$status"
