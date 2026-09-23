@@ -5,7 +5,10 @@ publishDate: "2026-02-14T19:33:45"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './breath.jpg' }
+heroImage:
+  src: ./breath.jpg
+  color: "#181818"
+  alt: CTF web 入门攻防世界刷题集合
 language: '简中'
 draft: false
 ---

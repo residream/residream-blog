@@ -4,7 +4,10 @@ description: "从元类理解 Python 对象创建，再手写一个简易 ORM。
 publishDate: "2026-08-28T17:00:02"
 tags:
   - "python"
-heroImage: { src: './cytokine-nitro.jpg', color: '#7E849F' }
+heroImage:
+  src: ./cytokine-nitro.jpg
+  color: "#7E849F"
+  alt: Python学习：从元类到ORM框架
 language: '简中'
 draft: false
 ---

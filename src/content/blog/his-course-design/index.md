@@ -4,7 +4,10 @@ description: "C 语言课程设计：一个医疗管理系统的开发记录。"
 publishDate: "2026-04-03T23:13:36"
 tags:
   - "c-cpp"
-heroImage: { src: './location-unknown.jpg', color: '#6A9796' }
+heroImage:
+  src: ./location-unknown.jpg
+  color: "#6A9796"
+  alt: C语言课设——医疗管理系统
 language: '简中'
 draft: false
 ---

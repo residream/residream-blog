@@ -4,7 +4,10 @@ description: "OOP 复习笔记（四）：类的扩展机制与继承体系。"
 publishDate: "2026-06-03T23:10:37"
 tags:
   - "c-cpp"
-heroImage: { src: './take-me-home.jpg', color: '#A78B77' }
+heroImage:
+  src: ./take-me-home.jpg
+  color: "#A78B77"
+  alt: OOP复(yù)习(xí)笔记（四）：类的扩展机制与继承体系
 language: '简中'
 draft: false
 ---

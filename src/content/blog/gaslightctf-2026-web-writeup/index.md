@@ -5,7 +5,10 @@ publishDate: "2026-08-17T20:19:18"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './lull.jpg', color: '#6178BC' }
+heroImage:
+  src: ./lull.jpg
+  color: "#6178BC"
+  alt: gaslightCTF 2026 web 题 writeup
 language: '简中'
 draft: false
 ---

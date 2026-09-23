@@ -5,7 +5,10 @@ publishDate: "2026-02-13T21:17:50"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './machine-life.jpg' }
+heroImage:
+  src: ./machine-life.jpg
+  color: "#282828"
+  alt: ctfshow sql注入
 language: '简中'
 draft: false
 ---

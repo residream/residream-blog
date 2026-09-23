@@ -4,7 +4,10 @@ description: "跟着黑马程序员敲 C++ 的练手记录，几个管理系统�
 publishDate: "2026-02-13T00:16:57"
 tags:
   - "c-cpp"
-heroImage: { src: './acoustic-session.jpg', color: '#A0957D' }
+heroImage:
+  src: ./acoustic-session.jpg
+  color: "#A0957D"
+  alt: C++ 入门黑马程序员学习记录
 language: '简中'
 draft: false
 ---

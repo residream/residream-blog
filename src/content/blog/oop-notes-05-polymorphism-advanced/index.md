@@ -4,7 +4,10 @@ description: "OOP 复习笔记（五）：虚机制、多态与高级特性。"
 publishDate: "2026-06-03T23:11:01"
 tags:
   - "c-cpp"
-heroImage: { src: './water-mirror.jpg', color: '#496C98' }
+heroImage:
+  src: ./water-mirror.jpg
+  color: "#496C98"
+  alt: OOP复(yù)习(xí)笔记（五）：虚机制、多态与高级特性
 language: '简中'
 draft: false
 ---

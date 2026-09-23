@@ -4,7 +4,10 @@ description: "OOP 复习笔记（三）：对象拷贝、运算符与动态内�
 publishDate: "2026-06-03T23:09:37"
 tags:
   - "c-cpp"
-heroImage: { src: './a-new-day.jpg', color: '#AA70AE' }
+heroImage:
+  src: ./a-new-day.jpg
+  color: "#AA70AE"
+  alt: OOP复(yù)习(xí)笔记（三）：对象拷贝、运算符与动态内存
 language: '简中'
 draft: false
 ---

@@ -5,7 +5,10 @@ publishDate: "2026-07-31T21:43:23"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './woke-up-at-night.jpg', color: '#9A8983' }
+heroImage:
+  src: ./woke-up-at-night.jpg
+  color: "#9A8983"
+  alt: CTFWEB 199.193.127.177:9000
 language: '简中'
 draft: false
 ---

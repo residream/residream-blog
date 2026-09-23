@@ -5,7 +5,10 @@ publishDate: "2026-07-30T19:48:24"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './passing-by.jpg', color: '#9A8784' }
+heroImage:
+  src: ./passing-by.jpg
+  color: "#9A8784"
+  alt: ctfshow XSS
 language: '简中'
 draft: false
 ---

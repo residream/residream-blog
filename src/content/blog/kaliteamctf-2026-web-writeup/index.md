@@ -5,7 +5,10 @@ publishDate: "2026-08-06T22:25:18"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './walking-with-a-cat.jpg', color: '#81766E' }
+heroImage:
+  src: ./walking-with-a-cat.jpg
+  color: "#81766E"
+  alt: KaliTeamCTF 2026 部分 web 题 writeup
 language: '简中'
 draft: false
 ---

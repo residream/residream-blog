@@ -5,7 +5,10 @@ publishDate: "2026-08-03T02:25:18"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './beer.jpg' }
+heroImage:
+  src: ./beer.jpg
+  color: "#181818"
+  alt: L3akCTF 2026 部分 web 题 writeup
 language: '简中'
 draft: false
 ---

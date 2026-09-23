@@ -5,7 +5,10 @@ publishDate: "2026-08-25T00:12:27"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './exploring-the-library.jpg' }
+heroImage:
+  src: ./exploring-the-library.jpg
+  color: "#383838"
+  alt: BrunnerCTF 2026 部分 web 题 writeup
 language: '简中'
 draft: false
 ---

@@ -6,7 +6,10 @@ tags:
   - "ctf"
   - "misc"
   - "web"
-heroImage: { src: './rainy-day.jpg', color: '#9C829C' }
+heroImage:
+  src: ./rainy-day.jpg
+  color: "#9C829C"
+  alt: 2026 SpiritGame CTF赛道
 language: '简中'
 draft: false
 ---

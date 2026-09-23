@@ -4,7 +4,10 @@ description: "梳理 JavaScript 的原型链，理解基于原型的对象模型
 publishDate: "2026-09-05T05:10:03"
 tags:
   - "javascript"
-heroImage: { src: './cycling.jpg', color: '#82829C' }
+heroImage:
+  src: ./cycling.jpg
+  color: "#82829C"
+  alt: JavaScript学习：基于原型的对象模型
 language: '简中'
 draft: false
 ---

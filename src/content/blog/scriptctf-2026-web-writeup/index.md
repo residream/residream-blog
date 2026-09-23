@@ -5,7 +5,10 @@ publishDate: "2026-08-11T16:00:27"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './little-desire.jpg', color: '#6587AA' }
+heroImage:
+  src: ./little-desire.jpg
+  color: "#6587AA"
+  alt: ScriptCTF 2026 web 题 writeup
 language: '简中'
 draft: false
 ---

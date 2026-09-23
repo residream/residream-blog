@@ -5,7 +5,10 @@ publishDate: "2026-08-10T19:25:39"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './rum-raisin-pancake.jpg', color: '#7D89A1' }
+heroImage:
+  src: ./rum-raisin-pancake.jpg
+  color: "#7D89A1"
+  alt: UIUCTF 2026 web 题 writeup
 language: '简中'
 draft: false
 ---

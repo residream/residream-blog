@@ -4,7 +4,10 @@ description: "OOP 复习笔记（一）：C++ 语言基础。"
 publishDate: "2026-06-03T23:07:52"
 tags:
   - "c-cpp"
-heroImage: { src: './rainy-day-2.jpg', color: '#7E899F' }
+heroImage:
+  src: ./rainy-day-2.jpg
+  color: "#7E899F"
+  alt: OOP复(yù)习(xí)笔记（一）：C++ 语言基础
 language: '简中'
 draft: false
 ---

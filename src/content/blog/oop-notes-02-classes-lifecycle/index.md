@@ -4,7 +4,10 @@ description: "OOP 复习笔记（二）：类、对象与生命周期。"
 publishDate: "2026-06-03T23:08:17"
 tags:
   - "c-cpp"
-heroImage: { src: './pain.jpg', color: '#66A4B7' }
+heroImage:
+  src: ./pain.jpg
+  color: "#66A4B7"
+  alt: OOP复(yù)习(xí)笔记（二）：类、对象与生命周期
 language: '简中'
 draft: false
 ---

@@ -5,7 +5,10 @@ publishDate: "2026-02-26T14:54:26"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './sea-breeze.jpg', color: '#5D6D7E' }
+heroImage:
+  src: ./sea-breeze.jpg
+  color: "#5D6D7E"
+  alt: ctfshow SSTI
 language: '简中'
 draft: false
 ---

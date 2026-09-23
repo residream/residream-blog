@@ -5,7 +5,10 @@ publishDate: "2026-03-11T23:02:34"
 tags:
   - "ctf"
   - "web"
-heroImage: { src: './rooftop-amusement-park.jpg', color: '#9F7E9B' }
+heroImage:
+  src: ./rooftop-amusement-park.jpg
+  color: "#9F7E9B"
+  alt: ctfshow SSRF
 language: '简中'
 draft: false
 ---
