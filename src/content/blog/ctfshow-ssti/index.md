@@ -1,6 +1,6 @@
 ---
 title: "ctfshow SSTI"
-description: "ctfshow Web 入门 SSTI 刷题记录，整理 web361 至 web372 中的属性访问、过滤绕过、字符串拼接、全角数字和无回显外带思路。"
+description: "ctfshow web361–372 SSTI 刷题记录。"
 publishDate: "2026-02-26T14:54:26"
 tags:
   - "ctf"

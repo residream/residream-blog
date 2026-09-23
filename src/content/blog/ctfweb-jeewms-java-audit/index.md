@@ -1,6 +1,6 @@
 ---
 title: "CTFWEB 199.193.127.177:8081"
-description: "一道基于 JEEWMS 的 Java Web 题复盘，记录 WAR 包审计、REST 认证绕过、用户接口与文件写入相关的分析和利用过程。"
+description: "一道 JEEWMS Java Web 题的代码审计复盘。"
 publishDate: "2026-08-10T20:22:37"
 tags:
   - "ctf"

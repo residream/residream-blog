@@ -1,6 +1,6 @@
 ---
 title: "ctfshow XSS"
-description: "反射型、存储型和 DOM 型 XSS 的自建环境演示，以及 ctfshow web316—web333 的解题记录与 Payload 分析。"
+description: "ctfshow web316–333 XSS 刷题记录，附三类 XSS 的自建环境演示。"
 publishDate: "2026-07-30T19:48:24"
 tags:
   - "ctf"

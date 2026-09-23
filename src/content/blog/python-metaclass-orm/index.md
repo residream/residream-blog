@@ -1,6 +1,6 @@
 ---
 title: "Python学习：从元类到ORM框架"
-description: "记录 Python 中 type()、metaclass、super() 与 MRO 的关系，并通过简易 ORM 示例梳理类创建、字段映射和属性访问流程。"
+description: "从元类理解 Python 对象创建，再手写一个简易 ORM。"
 publishDate: "2026-08-28T17:00:02"
 tags:
   - "python"

@@ -1,6 +1,6 @@
 ---
 title: "KaliTeamCTF 2026 部分 web 题 writeup"
-description: "KaliTeamCTF 2026 部分 Web 题解，记录 Robots 的 User-Agent 尝试、Lock Out 的 302 响应体泄露，以及 koon 7t 的赛后参考。"
+description: "KaliTeamCTF 2026 部分 Web 题的解题记录。"
 publishDate: "2026-08-06T22:25:18"
 tags:
   - "ctf"

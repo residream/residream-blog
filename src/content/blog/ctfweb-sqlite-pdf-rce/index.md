@@ -1,6 +1,6 @@
 ---
 title: "CTFWEB 199.193.127.177:9000"
-description: "一道 Web 题的解题记录，涉及 SQLite 注入、流量分析、Token 兑换、PDF 对象结构、pickle 反序列化与 rsync 通配符参数注入。"
+description: "一道串起 SQLite 注入到 rsync 参数注入的 Web 题解题记录。"
 publishDate: "2026-07-31T21:43:23"
 tags:
   - "ctf"

@@ -1,6 +1,6 @@
 ---
 title: "OOP复(yù)习(xí)笔记（一）：C++ 语言基础"
-description: "OOP 复习笔记第一篇，整理 C++ 程序结构、编译与链接、类型和变量、指针数组与引用、常量、Lambda 表达式及函数机制。"
+description: "OOP 复习笔记（一）：C++ 语言基础。"
 publishDate: "2026-06-03T23:07:52"
 tags:
   - "c-cpp"

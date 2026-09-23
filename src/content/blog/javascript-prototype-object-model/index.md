@@ -1,6 +1,6 @@
 ---
 title: "JavaScript学习：基于原型的对象模型"
-description: "梳理 JavaScript 的原型链、prototype、__proto__ 与 constructor 的关系，并通过构造函数、Object.create、class 和 extends 理解基于原型的对象模型与继承。"
+description: "梳理 JavaScript 的原型链，理解基于原型的对象模型。"
 publishDate: "2026-09-05T05:10:03"
 tags:
   - "javascript"

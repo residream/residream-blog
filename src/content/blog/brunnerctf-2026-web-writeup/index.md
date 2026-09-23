@@ -1,6 +1,6 @@
 ---
 title: "BrunnerCTF 2026 部分 web 题 writeup"
-description: "BrunnerCTF 2026 部分 Web 题解，记录 Fair Gambling、PHP 2003、Dumb-factor Authentication、Welcome Aboard 与 Secret Event 的分析及利用过程。"
+description: "BrunnerCTF 2026 部分 Web 题的解题记录。"
 publishDate: "2026-08-25T00:12:27"
 tags:
   - "ctf"

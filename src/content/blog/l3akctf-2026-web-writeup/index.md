@@ -1,6 +1,6 @@
 ---
 title: "L3akCTF 2026 部分 web 题 writeup"
-description: "L3akCTF 2026 暑期训练记录，整理 Get The Flag、catvault - part 1、Side Channel Surfer 和 Zebda 四道 Web 题的代码审计、利用链分析与解题过程。"
+description: "L3akCTF 2026 部分 Web 题的解题记录。"
 publishDate: "2026-08-03T02:25:18"
 tags:
   - "ctf"

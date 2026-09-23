@@ -1,6 +1,6 @@
 ---
 title: "ctfshow SSRF"
-description: "ctfshow Web 入门 SSRF 刷题记录，整理 web351 至 web360 中的 IP 地址编码、DNS 名称构造、重定向、特殊字符绕过及 MySQL、Redis 相关题解。"
+description: "ctfshow web351–360 SSRF 刷题记录。"
 publishDate: "2026-03-11T23:02:34"
 tags:
   - "ctf"

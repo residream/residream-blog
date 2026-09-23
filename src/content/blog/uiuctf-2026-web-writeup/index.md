@@ -1,6 +1,6 @@
 ---
 title: "UIUCTF 2026 web 题 writeup"
-description: "UIUCTF 2026 Web 题解，记录 CaveFilePaths、Explore the Cave 与 Nabi AI 的解题过程，涉及路径穿越、SQL 注入、Source Map 源码泄露及 SSRF。"
+description: "UIUCTF 2026 部分 Web 题的解题记录。"
 publishDate: "2026-08-10T19:25:39"
 tags:
   - "ctf"

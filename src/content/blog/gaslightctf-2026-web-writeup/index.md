@@ -1,6 +1,6 @@
 ---
 title: "gaslightCTF 2026 web 题 writeup"
-description: "gaslightCTF 2026 五道 Web 题的解题记录，涵盖 biscuit 权限注入、messageboard 排序侧信道、crawl 信息收集、json-warehouse 原型污染和 corridors 路径编码。"
+description: "gaslightCTF 2026 部分 Web 题的解题记录。"
 publishDate: "2026-08-17T20:19:18"
 tags:
   - "ctf"

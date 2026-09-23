@@ -1,6 +1,6 @@
 ---
 title: "ScriptCTF 2026 web 题 writeup"
-description: "ScriptCTF 2026 四道 Web 题的解题记录，涵盖 robots.txt 信息收集、PixiePlus 提示词与工具消息注入，以及 wpm-game 系列 Python 沙箱逃逸。"
+description: "ScriptCTF 2026 部分 Web 题的解题记录。"
 publishDate: "2026-08-11T16:00:27"
 tags:
   - "ctf"
