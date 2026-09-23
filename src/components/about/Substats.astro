@@ -21,15 +21,20 @@ const { stats } = Astro.props as Props
 async function fetchCount(item: SubstatsItem) {
   if (!item.api) return
   try {
-    const response = await fetch(`https://api.swo.moe/stats/${item.api}`)
+    const response = await fetch(`https://api.swo.moe/stats/${item.api}`, {
+      // Keep the JSON readable by the build runtime's HTTP client.
+      headers: { 'Accept-Encoding': 'identity' },
+      signal: AbortSignal.timeout(10_000)
+    })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
     const data = await response.json()
-    if (data.failed) {
-      throw new Error(data.message)
-    } else {
-      item.count = data.count
+    if (data?.failed) throw new Error(data.message || 'API request failed')
+    if (typeof data?.count !== 'number' || !Number.isSafeInteger(data.count) || data.count < 0) {
+      throw new Error('Invalid count')
     }
+    item.count = data.count
   } catch (error) {
-    console.error(`Error in Substats fetching: ${error}`)
+    console.warn(`[Substats] ${item.api}: ${error instanceof Error ? error.message : error}`)
   }
 }
 
@@ -50,23 +55,21 @@ await Promise.all(stats.map(fetchCount))
           <div class='flex-1 text-foreground transition-colors group-hover:text-primary'>
             {platform}
           </div>
-          {count ? (
-            <div class='flex items-center gap-1.5'>
-              <samp>{count}</samp>
-              <span class='text-sm font-normal'>{text}</span>
-            </div>
-          ) : (
-            'null'
-          )}
+          <div class='flex items-center gap-1.5'>
+            <samp title={count == null ? 'Statistics temporarily unavailable' : undefined}>
+              {count ?? '—'}
+            </samp>
+            <span class='text-sm font-normal'>{text}</span>
+          </div>
         </div>
       </a>
     ))
   }
 </div>
 <div class='mt-2 text-right text-sm'>
-  Display real-time; powered by <a
+  Powered by <a
     class='text-muted-foreground'
-    href='http://github.com/spencerwooo/substats'
+    href='https://github.com/spencerwooo/substats'
     target='_blank'
     rel='noopener noreferrer'>Substats</a
   >
