@@ -52,9 +52,9 @@ bun run deploy "$HOME/Desktop/Blog/博客翻新日志：从-WordPress-迁移到-
 
 ## 致谢
 
-感谢 Orac1e 的博客源码和这些开源项目，让主站、评论、状态页、访问统计和在线工具都能顺利搭起来：
+感谢 Orac1e 学长的博客源码和这些开源项目，让主站、评论、状态页、访问统计和在线工具都能顺利搭起来：
 
-<github-card data-repo="Byforacle/astro-blog"><a href="https://github.com/Byforacle/astro-blog">Orac1e · 博客源码</a></github-card>
+<github-card data-repo="Byforacle/astro-blog"><a href="https://github.com/Byforacle/astro-blog">Orac1e 学长 · 博客源码</a></github-card>
 
 <github-card data-repo="cworld1/astro-theme-pure"><a href="https://github.com/cworld1/astro-theme-pure">astro-theme-pure · 博客主题</a></github-card>
 
