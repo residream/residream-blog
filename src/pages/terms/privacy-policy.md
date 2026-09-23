@@ -2,7 +2,7 @@
 layout: '@/layouts/IndividualPage.astro'
 
 title: 'Privacy Policy'
-description: '最后更新：2026-09-22'
+description: '最后更新：2026-09-23'
 language: 'Zh'
 back: '/terms'
 ---
@@ -36,7 +36,7 @@ back: '/terms'
 - URL 中的 `utm_*` 系列参数（若有）
 - 是否为新访客、新会话，以及跳出情况
 
-**不使用 Cookie，也不在你的浏览器中写入任何存储。** 不保存你的 IP 地址——独立访客数由 IP 与 User Agent 派生出的每日轮换哈希值统计，无法反向还原，也无法跨天关联。
+Counterscale 不使用 Cookie，也不在你的浏览器中写入存储。
 
 数据存于 Cloudflare Analytics Engine，**90 天后自动删除**。
 
