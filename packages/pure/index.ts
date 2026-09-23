@@ -1,13 +1,14 @@
 import { fileURLToPath } from 'node:url'
 // Astro
 import type { AstroIntegration, RehypePlugins, RemarkPlugins } from 'astro'
+import { isUnifiedProcessor, unified } from '@astrojs/markdown-remark'
 // Integrations
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import UnoCSS from '@unocss/astro'
 import { AstroError } from 'astro/errors'
-
 import * as pagefind from 'pagefind'
+
 import rehypeExternalLinks from './plugins/rehype-external-links'
 import rehypeImageCaption from './plugins/rehype-image-caption'
 import { remarkAddZoomable, remarkReadingTime } from './plugins/remark-plugins'
@@ -75,12 +76,23 @@ export default function AstroPureIntegration(opts: UserInputConfig): AstroIntegr
             plugins: [vitePluginUserConfig(userConfig, config)]
           },
           markdown: {
-            remarkPlugins,
-            rehypePlugins
-            // rehypePlugins: [rehypeRtlCodeSupport()],
-            // shikiConfig:
-            // Configure Shiki theme if the user is using the default github-dark theme.
-            //   config.markdown.shikiConfig.theme !== 'github-dark' ? {} : { theme: 'css-variables' }
+            processor: unified({
+              ...(isUnifiedProcessor(config.markdown.processor)
+                ? config.markdown.processor.options
+                : {}),
+              remarkPlugins: [
+                ...(isUnifiedProcessor(config.markdown.processor)
+                  ? config.markdown.processor.options.remarkPlugins
+                  : []),
+                ...remarkPlugins
+              ],
+              rehypePlugins: [
+                ...(isUnifiedProcessor(config.markdown.processor)
+                  ? config.markdown.processor.options.rehypePlugins
+                  : []),
+                ...rehypePlugins
+              ]
+            })
           },
           scopedStyleStrategy: 'where',
           // If not already configured, default to prefetching all links on hover.
@@ -93,18 +105,22 @@ export default function AstroPureIntegration(opts: UserInputConfig): AstroIntegr
         if (!opts.integ.pagefind) return
         try {
           const targetDir = fileURLToPath(dir)
-          
+
           // Create index
-          const { index } = await pagefind.createIndex()
-          if (!index) {
-            throw new Error('Failed to create Pagefind index')
+          const { index, errors } = await pagefind.createIndex()
+          if (!index || errors.length) {
+            throw new Error(`Failed to create Pagefind index: ${errors.join('; ')}`)
           }
 
           // Write index files to the `./pagefind/`
-          await index.addDirectory({ path: targetDir })
-          await index.writeFiles({
+          const indexed = await index.addDirectory({ path: targetDir })
+          if (indexed.errors.length || !indexed.page_count)
+            throw new Error(`Pagefind indexing failed: ${indexed.errors.join('; ') || 'no pages'}`)
+          const written = await index.writeFiles({
             outputPath: fileURLToPath(new URL('./pagefind/', dir))
           })
+          if (written.errors.length)
+            throw new Error(`Pagefind output failed: ${written.errors.join('; ')}`)
         } finally {
           await pagefind.close()
         }

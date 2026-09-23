@@ -170,6 +170,22 @@ test('remote body images stay unchanged and a text-only article needs no image',
   assert.ok(output(plan).endsWith(body))
 })
 
+test('in-place synchronization preserves image markup and an explicit disabled cover', async (t) => {
+  const f = await fixture(t)
+  await picture(path.join(f.notes, 'cover.png'))
+  const body = '\n正文\n\n![说明](./cover.png "原说明")\n'
+  await put(f.source, '---\ntitle: No Cover\nheroImage: false\n---\n' + body)
+  const first = await preparePost(f)
+  assert.equal(metadata(first).heroImage, false)
+  assert.equal(readMarkdown(output(first)).body, body)
+  await writePreparedPost(first, f.repoRoot)
+  const second = await preparePost({
+    ...f,
+    source: path.join(f.repoRoot, first.postDir, 'index.md')
+  })
+  assert.equal(output(second), output(first))
+})
+
 test('validates YAML, dates and slugs and refuses to overwrite a different article', async (t) => {
   const f = await fixture(t)
   assert.throws(() => readMarkdown('---\ntitle: x\ntitle: y\n---\n'), /frontmatter 格式错误/)

@@ -48,6 +48,10 @@ export default {
   importOrderParserPlugins: ['astro', 'typescript', 'jsx', 'decorators-legacy'],
   overrides: [
     {
+      files: ['*.md', '*.mdx'],
+      options: { embeddedLanguageFormatting: 'off' }
+    },
+    {
       files: '*.astro',
       options: {
         parser: 'astro'

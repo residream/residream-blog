@@ -1,9 +1,10 @@
-import { rehypeHeadingIds } from '@astrojs/markdown-remark'
+import { rehypeHeadingIds, unified } from '@astrojs/markdown-remark'
 import AstroPureIntegration from 'astro-pure'
-import { defineConfig, fontProviders, svgoOptimizer } from 'astro/config'
+import { defineConfig, svgoOptimizer } from 'astro/config'
 import rehypeKatex from 'rehype-katex'
 import remarkMath from 'remark-math'
 
+import satoshiFonts from './src/assets/satoshi-fonts.ts'
 // Local integrations
 import rehypeAutolinkHeadings from './src/plugins/rehype-auto-link-headings.ts'
 // Shiki
@@ -41,6 +42,7 @@ export default defineConfig({
   // https://docs.astro.build/en/guides/deploy/
   // Static output, served by nginx on the ECS
   output: 'static',
+  compressHTML: true,
 
   // [Assets]
   image: {
@@ -53,7 +55,7 @@ export default defineConfig({
   // https://docs.astro.build/en/guides/fonts/
   fonts: [
     {
-      provider: fontProviders.fontshare(),
+      provider: satoshiFonts,
       name: 'Satoshi',
       cssVariable: '--font-satoshi',
       // Default included:
@@ -69,19 +71,21 @@ export default defineConfig({
 
   // [Markdown]
   markdown: {
-    remarkPlugins: [remarkMath],
-    rehypePlugins: [
-      [rehypeKatex, {}],
-      rehypeHeadingIds,
-      [
-        rehypeAutolinkHeadings,
-        {
-          behavior: 'append',
-          properties: { className: ['anchor'] },
-          content: { type: 'text', value: '#' }
-        }
+    processor: unified({
+      remarkPlugins: [remarkMath],
+      rehypePlugins: [
+        [rehypeKatex, {}],
+        rehypeHeadingIds,
+        [
+          rehypeAutolinkHeadings,
+          {
+            behavior: 'append',
+            properties: { className: ['anchor'] },
+            content: { type: 'text', value: '#' }
+          }
+        ]
       ]
-    ],
+    }),
     // https://docs.astro.build/en/guides/syntax-highlighting/
     shikiConfig: {
       themes: {
@@ -131,10 +135,6 @@ export default defineConfig({
     svgOptimizer: svgoOptimizer(),
     // Enables pre-rendering your prefetched pages on the client in supported browsers.
     // https://docs.astro.build/en/reference/experimental-flags/client-prerender/
-    clientPrerender: true,
-    // https://docs.astro.build/en/reference/experimental-flags/queued-rendering/
-    queuedRendering: {
-      enabled: true
-    }
+    clientPrerender: true
   }
 })

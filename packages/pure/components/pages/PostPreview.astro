@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets'
-import { type CollectionEntry, type CollectionKey, render } from 'astro:content'
+import { render, type CollectionEntry, type CollectionKey } from 'astro:content'
 
 import { cn } from '../../utils'
 import { Button, FormattedDate, Icon } from '../user'
@@ -15,15 +15,13 @@ const { post, detailed = false, class: className } = Astro.props
 const { id, data } = post
 const { remarkPluginFrontmatter } = await render(post)
 const postDate = data.updatedDate ?? data.publishDate
+const previewStyle =
+  detailed && data.heroImage?.color
+    ? `--preview-highlight:color-mix(in srgb,${data.heroImage.color} 40%,hsl(var(--foreground)/var(--un-text-opacity,1)));--preview-highlight-bg:hsl(from ${data.heroImage.color} h s l/20%)`
+    : undefined
 ---
 
-<li
-  class={cn('post-preview', className)}
-  style={detailed &&
-    data.heroImage?.color &&
-    `--preview-highlight:color-mix(in srgb,${data.heroImage.color} 40%,hsl(var(--foreground)/var(--un-text-opacity,1)));
-    --preview-highlight-bg:hsl(from ${data.heroImage.color} h s l/20%)`}
->
+<li class={cn('post-preview', className)} style={previewStyle}>
   <a
     class={cn(
       'block w-full relative group rounded-2xl border bg-background transition-colors ease-in-out px-5 py-2.5 hover:bg-muted hover:text-primary',
@@ -51,7 +49,7 @@ const postDate = data.updatedDate ?? data.publishDate
 
       {/* title */}
       <div class='flex justify-between flex-grow'>
-        <div class={detailed && 'font-medium'}>
+        <div class={detailed ? 'font-medium' : undefined}>
           {data.draft && <span class='text-red-500'>(Draft) </span>}
           {data.title}
         </div>
@@ -122,13 +120,18 @@ const postDate = data.updatedDate ?? data.publishDate
 
   <style>
     .post-preview {
-      --preview-highlight-final: var( --preview-highlight, hsl(var(--primary) / var(--un-text-opacity, 1))
+      --preview-highlight-final: var(
+        --preview-highlight,
+        hsl(var(--primary) / var(--un-text-opacity, 1))
       );
     }
     .post-preview:hover {
       & > a,
       & .tag-list a {
-        background-color: var( --preview-highlight-bg, hsl(var(--muted) / var(--un-bg-opacity, 1))) !important;
+        background-color: var(
+          --preview-highlight-bg,
+          hsl(var(--muted) / var(--un-bg-opacity, 1))
+        ) !important;
       }
       & > a,
       & .tag-list a:hover {
@@ -146,7 +149,11 @@ const postDate = data.updatedDate ?? data.publishDate
 
     @media (max-width: 768px) {
       .cover-image {
-        -webkit-mask-image: -webkit-linear-gradient(bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%);
+        -webkit-mask-image: -webkit-linear-gradient(
+          bottom,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 1) 100%
+        );
         -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%);
         mask-image: linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%);
       }

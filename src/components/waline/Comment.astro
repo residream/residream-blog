@@ -11,7 +11,11 @@ const { class: className } = Astro.props
 {
   config.integ.waline.enable && (
     <comment-component>
-      <div id='waline' class={cn('not-prose', className)}>
+      <div
+        id='waline'
+        class={cn('not-prose', className)}
+        data-hide-meta={!config.integ.waline.showMeta}
+      >
         Comment seems to stuck. Try to refresh?✨
       </div>
     </comment-component>
@@ -55,13 +59,11 @@ const { class: className } = Astro.props
   if (walineConfig.enable) customElements.define('comment-component', Comment)
 </script>
 
-{
-  config.integ.waline.showMeta &&(
-    <style> #waline :global(.wl-meta) { display: none; } </style>
-  )
-}
-
 <style>
+  #waline[data-hide-meta='true'] :global(.wl-meta) {
+    display: none;
+  }
+
   /* Basic theme */
   #waline {
     /* Font size */

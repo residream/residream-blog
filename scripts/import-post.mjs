@@ -331,6 +331,7 @@ export async function preparePost({
       let alt = ref.node.alt ?? ''
       if (!alt.trim() || alt.trim().toLowerCase() === 'img')
         alt = `${ref.section || title} 配图${++altCount}`
+      if (ref.node.type === 'image' && ref.url === rewritten && alt === ref.node.alt) continue
       const escaped = alt.replace(/[\\[\]]/g, '\\$&')
       const url = rewritten.split('/').map(encodeURIComponent).join('/')
       const imageTitle = ref.title ? ` ${JSON.stringify(ref.title)}` : ''
@@ -358,7 +359,7 @@ export async function preparePost({
       hero = { ...hero, src: saveImage(heroSrc, heroFile), color, alt: hero?.alt || title }
       doc.set('heroImage', hero)
     } else doc.delete('heroImage')
-  } else doc.delete('heroImage')
+  } else doc.set('heroImage', false)
   const publishDate = dateValue(
     data.publishDate,
     existing?.publishDate || now.toISOString(),

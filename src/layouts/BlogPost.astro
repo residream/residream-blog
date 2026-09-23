@@ -1,13 +1,15 @@
 ---
 import type { MarkdownHeading } from 'astro'
+import { getImage } from 'astro:assets'
 import type { CollectionEntry } from 'astro:content'
 
 // Plugin styles
 import 'katex/dist/katex.min.css'
 
+import config from 'virtual:config'
+
 import { MediumZoom } from 'astro-pure/advanced'
 import { ArticleBottom, Copyright, Hero, TOC } from 'astro-pure/components/pages'
-import config from 'virtual:config'
 import PageLayout from '@/layouts/ContentLayout.astro'
 import { Comment, PageInfo } from '@/components/waline'
 
@@ -25,24 +27,16 @@ const {
   remarkPluginFrontmatter
 } = Astro.props
 
-const {
-  description,
-  heroImage,
-  publishDate,
-  title,
-  updatedDate,
-  draft: isDraft,
-  comment
-} = data
+const { description, heroImage, publishDate, title, draft: isDraft, comment } = data
 
 const enableComment = comment && config.integ.waline.enable
 
 const socialImage = heroImage
   ? typeof heroImage.src === 'string'
     ? heroImage.src
-    : heroImage.src.src
+    : (await getImage({ src: heroImage.src })).src
   : config.socialCard
-const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString()
+const articleDate = publishDate.toISOString()
 const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--un-text-opacity))'
 ---
 
@@ -66,8 +60,7 @@ const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--un-tex
     <Copyright {data} />
     {/* Article recommend */}
     <ArticleBottom collections={posts} {id} class='mt-3 sm:mt-6' />
-    { /* Comment */
-    !isDraft && enableComment && <Comment class='mt-3 sm:mt-6' />}
+    {/* Comment */ !isDraft && enableComment && <Comment class='mt-3 sm:mt-6' />}
   </Fragment>
 
   <slot name='bottom-sidebar' slot='bottom-sidebar' />

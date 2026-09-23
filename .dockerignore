@@ -66,6 +66,8 @@ dist/
 # Environment
 .env
 .env.production
+.env.*
+.deploy.env
 *.local
 
 # IDEs

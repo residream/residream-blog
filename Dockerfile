@@ -7,6 +7,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
     
 COPY package.json bun.lock ./
+COPY packages/pure ./packages/pure
 
 RUN bun install --frozen-lockfile
 
