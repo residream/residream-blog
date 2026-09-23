@@ -16,6 +16,7 @@
     "yijiansilian": "bun lint && bun sync && bun check && bun format",
     "clean": "rm -rf .astro .vercel dist",
     "deploy": "bash scripts/deploy.sh",
+    "test:deploy": "node --test scripts/import-post.test.mjs",
     "cache:avatars": "tsx preset/scripts/cacheAvatars.ts"
   },
   "dependencies": {
@@ -36,7 +37,10 @@
     "@typescript-eslint/parser": "^8.59.1",
     "eslint": "^10.2.1",
     "eslint-plugin-astro": "^1.7.0",
+    "mdast-util-from-markdown": "2.0.3",
+    "parse5": "7.3.0",
     "prettier": "^3.8.3",
-    "prettier-plugin-astro": "^0.14.1"
+    "prettier-plugin-astro": "^0.14.1",
+    "yaml": "2.8.3"
   }
 }

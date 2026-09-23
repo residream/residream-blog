@@ -2,6 +2,8 @@
 
 [English](./README.md) | 简体中文
 
+本博客的文章导入与部署：写好 Markdown 后运行 `bun run deploy "文章.md"`，即可自动定位图片、提取主题色并补齐发布时间。详见 [部署说明](./scripts/README.md)。
+
 一个由 Astro 构建的，轻便简洁、快速强大的博客 & 文档主题。
 
 [![GitHub deployments](https://img.shields.io/github/deployments/cworld1/astro-theme-pure/production?style=flat&logo=vercel&label=vercel)](https://astro-pure.js.org/)
