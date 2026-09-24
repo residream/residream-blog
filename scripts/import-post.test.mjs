@@ -293,6 +293,7 @@ test('deployment completes on system Bash with mocked upload, backup, verificati
 if [ "$DEPLOY_TEST_SSH_FAIL" = 1 ]; then exit 1; fi
 printf 'ssh %s\\n' "$*" >> "$DEPLOY_TEST_LOG"
 case "$*" in *"bash -s"*|*"tee "*) cat >> "$DEPLOY_TEST_LOG" ;; esac
+case "$*" in *"curl -s --resolve"*) printf '%s' "$DEPLOY_TEST_HTML" ;; esac
 `,
     rsync: `#!/bin/sh
 printf 'rsync %s\\n' "$*" >> "$DEPLOY_TEST_LOG"
@@ -347,4 +348,15 @@ printf '{"success":true}'
   const offline = run([...flags, '--allow-dirty'], { DEPLOY_TEST_SSH_FAIL: '1' })
   assert.equal(offline.status, 1)
   assert.match(offline.stderr, /无法登录 fixture.invalid。/)
+  const marker = { VERIFY_HTML_MARKER: 'id="my-injected-script"' }
+  const marked = run([...flags, '--allow-dirty'], {
+    ...marker,
+    DEPLOY_TEST_HTML: '<script id="my-injected-script" defer></script>'
+  })
+  assert.equal(marked.status, 0, marked.stderr)
+  assert.match(marked.stdout, /VERIFY_HTML_MARKER +有/)
+  const unmarked = run([...flags, '--allow-dirty'], { ...marker, DEPLOY_TEST_HTML: '<html></html>' })
+  assert.equal(unmarked.status, 1)
+  assert.match(unmarked.stderr, /首页里没有 VERIFY_HTML_MARKER 指定的内容/)
+  assert.match(unmarked.stdout, /已发布：/)
 })

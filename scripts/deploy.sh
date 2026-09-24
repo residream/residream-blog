@@ -123,6 +123,17 @@ exit \$fail
 EOF
 }
 
+# 首页应包含 VERIFY_HTML_MARKER（例如服务器注入的脚本）；缺失只警告，回滚解决不了。
+check_marker() {
+  local html
+  [ -n "${VERIFY_HTML_MARKER:-}" ] || return 0
+  html="$(remote "curl -s --resolve '$SITE_HOST:443:127.0.0.1' 'https://$SITE_HOST/'" || true)"
+  case "$html" in
+    *"$VERIFY_HTML_MARKER"*) printf '  %-40s %s\n' '/ VERIFY_HTML_MARKER' 有 ;;
+    *) warn "首页里没有 VERIFY_HTML_MARKER 指定的内容；网站已更新，请检查服务器上的 nginx 配置"; return 1 ;;
+  esac
+}
+
 purge_cache() {
   local token="${CF_API_TOKEN:-}" resp
   if [ -z "$token" ] && command -v security >/dev/null 2>&1; then
@@ -195,9 +206,11 @@ if [ "$ROLLBACK" = 1 ]; then
   remote "sudo rsync -a --delete '$WEB_ROOT.prev/' '$WEB_ROOT/'"
   step "自检"
   verify || die "回滚后自检没有通过"
+  status=0
+  check_marker || status=1
   step "清 Cloudflare 缓存"
-  purge_cache || exit 1
-  exit 0
+  purge_cache || status=1
+  exit "$status"
 fi
 
 if [ -n "$POST" ]; then import_post; fi
@@ -243,9 +256,10 @@ printf '%s · %s\n' "$RELEASE" "$(date '+%Y-%m-%d %H:%M')" | remote_in "sudo tee
 
 step "自检"
 verify || die "自检没有通过；要恢复上一个版本，运行：bun run deploy --rollback"
+status=0
+check_marker || status=1
 
 step "清 Cloudflare 缓存"
-status=0
 purge_cache || status=1
 echo
 echo "已发布：$RELEASE"
