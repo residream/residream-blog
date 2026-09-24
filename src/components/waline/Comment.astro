@@ -30,12 +30,24 @@ const { class: className } = Astro.props
   const walineConfig = config.integ.waline
 
   class Comment extends HTMLElement {
-    constructor() {
-      super()
-    }
+    instance: ReturnType<typeof walineInit> = null
 
     connectedCallback() {
-      // Prevent Vue log errors
+      if ((document as Document & { prerendering?: boolean }).prerendering) {
+        document.addEventListener('prerenderingchange', this.initialize, { once: true })
+      } else {
+        this.initialize()
+      }
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener('prerenderingchange', this.initialize)
+      this.instance?.destroy()
+      this.instance = null
+    }
+
+    initialize = () => {
+      if (!this.isConnected || this.instance) return
       ;(globalThis as unknown as { __VUE_OPTIONS_API__: boolean }).__VUE_OPTIONS_API__ = true
       ;(globalThis as unknown as { __VUE_PROD_DEVTOOLS__: boolean }).__VUE_PROD_DEVTOOLS__ = false
       ;(
@@ -46,7 +58,7 @@ const { class: className } = Astro.props
         (preset) => `${config.npmCDN}/@waline/emojis@1.2.0/${preset}` as WalineEmojiPresets
       )
 
-      walineInit({
+      this.instance = walineInit({
         el: 'comment-component #waline',
         serverURL: walineConfig.server || '',
         emoji,
