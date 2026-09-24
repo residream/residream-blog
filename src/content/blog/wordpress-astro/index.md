@@ -14,7 +14,7 @@ draft: false
 
 原博客本来是 2026 年 2 月搭建的，一直跑在 Wordpress + Argon 主题上，但后来发现这种动态网页虽然管理起来比较方便，Wordpress 的生态也比较齐全，但网站的加载速度一直感觉一般，并且 Argon 主题也越用越觉得花哨
 
-所以最近参考了 [orac1e](https://orac1e.me) 和 [CWorld](https://cworld0.com) 的博客，把整站换成了 [Astro](https://astro.build) + [astro-pure](https://github.com/cworld1/astro-theme-pure) 主题的静态站，这篇记录一下迁移日志
+所以最近参考了 [Orac1e](https://orac1e.me) 和 [CWorld](https://cworld0.com) 的博客，把整站换成了 [Astro](https://astro.build) + [astro-pure](https://github.com/cworld1/astro-theme-pure) 主题的静态站，这篇记录一下迁移日志
 
 ## 架构
 
@@ -66,5 +66,5 @@ bun run deploy "$HOME/Desktop/Blog/博客翻新日志：从-WordPress-迁移到-
 
 <github-card data-repo="gchq/CyberChef"><a href="https://github.com/gchq/CyberChef">CyberChef · 在线工具</a></github-card>
 
-- 参考：[orac1e](https://orac1e.me) 和 [CWorld](https://cworld0.com) 的博客
+- 参考：[Orac1e](https://orac1e.me) 和 [CWorld](https://cworld0.com) 的博客
 - 头图：画师 [catzz](https://space.bilibili.com/308124) 的作品
