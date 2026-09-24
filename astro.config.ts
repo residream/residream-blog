@@ -133,8 +133,8 @@ export default defineConfig({
     // Enable SVGO optimization for SVG assets
     // https://docs.astro.build/en/reference/experimental-flags/svg-optimization/
     svgOptimizer: svgoOptimizer(),
-    // Enables pre-rendering your prefetched pages on the client in supported browsers.
+    // Avoid Chrome 154's prerender crash; ordinary prefetch stays enabled.
     // https://docs.astro.build/en/reference/experimental-flags/client-prerender/
-    clientPrerender: true
+    clientPrerender: false
   }
 })
