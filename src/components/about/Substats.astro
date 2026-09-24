@@ -10,6 +10,7 @@ interface SubstatsItem {
   text: string
   api?: string
   count?: number
+  stale?: boolean
 }
 
 type Props = {
@@ -20,22 +21,38 @@ const { stats } = Astro.props as Props
 
 async function fetchCount(item: SubstatsItem) {
   if (!item.api) return
-  try {
-    const response = await fetch(`https://api.swo.moe/stats/${item.api}`, {
-      // Keep the JSON readable by the build runtime's HTTP client.
-      headers: { 'Accept-Encoding': 'identity' },
-      signal: AbortSignal.timeout(10_000)
-    })
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    const data = await response.json()
-    if (data?.failed) throw new Error(data.message || 'API request failed')
-    if (typeof data?.count !== 'number' || !Number.isSafeInteger(data.count) || data.count < 0) {
-      throw new Error('Invalid count')
+  const bilibiliUid = /^bilibili\/(\d+)$/.exec(item.api)?.[1]
+  const sources = [
+    ...(bilibiliUid
+      ? [{ url: `https://api.bilibili.com/x/relation/stat?vmid=${bilibiliUid}`, official: true }]
+      : []),
+    { url: `https://api.swo.moe/stats/${item.api}`, official: false }
+  ]
+  const errors: string[] = []
+  for (const { url, official } of sources) {
+    try {
+      const response = await fetch(url, {
+        headers: { Accept: 'application/json', 'Accept-Encoding': 'identity' },
+        signal: AbortSignal.timeout(5_000)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      if (official ? data?.code !== 0 : data?.failed) {
+        throw new Error(data?.message || 'API request failed')
+      }
+      const count = official ? data?.data?.follower : data?.count
+      if (typeof count !== 'number' || !Number.isSafeInteger(count) || count < 0) {
+        throw new Error('Invalid count')
+      }
+      item.count = count
+      item.stale = false
+      return
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : String(error))
     }
-    item.count = data.count
-  } catch (error) {
-    console.warn(`[Substats] ${item.api}: ${error instanceof Error ? error.message : error}`)
   }
+  item.stale = true
+  console.warn(`[Substats] ${item.api}: ${errors.join('; ')}`)
 }
 
 await Promise.all(stats.map(fetchCount))
@@ -43,7 +60,7 @@ await Promise.all(stats.map(fetchCount))
 
 <div class='grid grid-cols-1 gap-3 rounded-xl border p-2 sm:grid-cols-2 sm:p-3'>
   {
-    stats.map(({ link, platform, icon, color, count, text }) => (
+    stats.map(({ link, platform, icon, color, count, text, stale }) => (
       <a
         class='group text-muted-foreground no-underline'
         href={link}
@@ -56,7 +73,15 @@ await Promise.all(stats.map(fetchCount))
             {platform}
           </div>
           <div class='flex items-center gap-1.5'>
-            <samp title={count == null ? 'Statistics temporarily unavailable' : undefined}>
+            <samp
+              title={
+                count == null
+                  ? 'Statistics temporarily unavailable'
+                  : stale
+                    ? 'Last known value; live statistics temporarily unavailable'
+                    : undefined
+              }
+            >
               {count ?? '—'}
             </samp>
             <span class='text-sm font-normal'>{text}</span>
