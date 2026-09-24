@@ -105,17 +105,22 @@ import_post() {
 
 # 直接检查源站，绕过 Cloudflare。
 verify() {
-  local sample="" d
-  for d in dist/blog/*/; do
-    case "$(basename "$d")" in [0-9]*) ;; *) sample="/blog/$(basename "$d")"; break ;; esac
-  done
   remote_in bash -s <<EOF
 set -e
-code() { curl -s -o /dev/null -w '%{http_code}' --resolve '$SITE_HOST:443:127.0.0.1' "https://$SITE_HOST\$1"; }
+code() { curl -s --connect-timeout 10 --max-time 30 -o /dev/null -w '%{http_code}' --resolve '$SITE_HOST:443:127.0.0.1' "https://$SITE_HOST\$1"; }
 fail=0
-check() { got=\$(code "\$1"); printf '  %-40s %s\n' "\$1" "\$got"; [ "\$got" = "\$2" ] || fail=1; }
+check() { got=\$(code "\$1") || got=000; printf '  %-40s %s\n' "\$1" "\$got"; [ "\$got" = "\$2" ] || fail=1; }
 check / 200
-check '$sample' 200
+sample=/blog
+for file in '$WEB_ROOT'/blog/*/index.html; do
+  [ -f "\$file" ] || continue
+  slug=\${file%/index.html}
+  slug=\${slug##*/}
+  case "\$slug" in [0-9]*) continue ;; esac
+  sample="/blog/\$slug"
+  break
+done
+check "\$sample" 200
 check /this-page-does-not-exist 404
 check /index.php/archive/ 301
 [ -f '$WEB_ROOT/.release' ] && printf '  线上版本：%s\n' "\$(cat '$WEB_ROOT/.release')"
@@ -205,8 +210,8 @@ if [ "$ROLLBACK" = 1 ]; then
   confirm "  把线上恢复成这个版本？" || { echo "  已取消，线上没有改动"; exit 0; }
   remote "sudo rsync -a --delete '$WEB_ROOT.prev/' '$WEB_ROOT/'"
   step "自检"
-  verify || die "回滚后自检没有通过"
   status=0
+  verify || { warn "备份已恢复，但回滚后自检没有通过；仍会清理缓存"; status=1; }
   check_marker || status=1
   step "清 Cloudflare 缓存"
   purge_cache || status=1
