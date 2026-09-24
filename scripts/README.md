@@ -91,3 +91,14 @@ bun run deploy --rollback
 服务器与 Cloudflare 配置继续使用 `.deploy.env`，参考项目根目录的 `.deploy.env.example`。本地导入预览无需配置 `DEPLOY_HOST`。
 
 维护脚本后可运行 `bun run test:deploy`，检查图片查找、取色、占位符、重复导入和本地部署流程。
+
+## 备份
+
+服务器每天凌晨备份评论库和访问统计数据，保留 14 天；每周日归档服务器与服务配置，保留 5 周。密码、私钥等另行归档，只保存在服务器上。
+
+```sh
+# 把服务器上的备份同步到本机（位置见 .deploy.env 中的 BACKUP_DIR），并校验最新一份
+bun run backup
+```
+
+本机副本不会被自动删除，需要时手动清理。
