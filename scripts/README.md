@@ -86,11 +86,15 @@ bun run deploy --dry-run
 bun run deploy --rollback
 ```
 
+回滚会直接检查服务器上恢复的页面，不需要本地构建产物。恢复成功后即使自检失败，也会继续清理缓存并报告错误。
+
 导入不会改动 Blog 中的源 Markdown；如果直接传入仓库内的文章，则原地更新。重复导入相同内容会跳过提交，也不会删除原有附件或图片。仓库有其他未提交改动时默认停止；确实希望一起构建时可加 `--allow-dirty`。部署会创建文章的本地 Git 提交，不会自动推送远端。
 
 服务器与 Cloudflare 配置继续使用 `.deploy.env`，参考项目根目录的 `.deploy.env.example`。本地导入预览无需配置 `DEPLOY_HOST`。
 
 维护脚本后可运行 `bun run test:deploy`，检查图片查找、取色、占位符、重复导入和本地部署流程。
+
+主题源码通过 Bun workspace 直接引用 `packages/pure/`。首次安装或拉取依赖配置变更后运行一次 `bun install`，之后修改主题即可直接构建，无需同步依赖目录中的副本。
 
 ## 备份
 

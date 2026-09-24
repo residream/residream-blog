@@ -288,17 +288,40 @@ test('deployment completes on system Bash with mocked upload, backup, verificati
   await put(path.join(f.repoRoot, 'dist/blog/example/index.html'), 'article')
   const bin = path.join(f.root, 'bin')
   const log = path.join(f.root, 'remote.log')
+  const webRoot = path.join(f.root, 'live')
+  await put(path.join(webRoot, 'blog/example/index.html'), 'live article')
   const stubs = {
     ssh: `#!/bin/sh
 if [ "$DEPLOY_TEST_SSH_FAIL" = 1 ]; then exit 1; fi
 printf 'ssh %s\\n' "$*" >> "$DEPLOY_TEST_LOG"
-case "$*" in *"bash -s"*|*"tee "*) cat >> "$DEPLOY_TEST_LOG" ;; esac
+case "$*" in
+  *"bash -s"*)
+    script="$(cat)"
+    printf '%s\\n' "$script" >> "$DEPLOY_TEST_LOG"
+    case "$script" in *'code()'*) printf '%s\\n' "$script" | /bin/bash -s || exit "$?" ;; esac
+    ;;
+  *"tee "*) cat >> "$DEPLOY_TEST_LOG" ;;
+esac
 `,
     rsync: `#!/bin/sh
 printf 'rsync %s\\n' "$*" >> "$DEPLOY_TEST_LOG"
 case "$*" in *--itemize-changes*) printf '>f+++++++++ index.html\\n' ;; esac
 `,
     curl: `#!/bin/sh
+case "$*" in
+  *api.cloudflare.com*) ;;
+  *)
+    for arg in "$@"; do url="$arg"; done
+    printf 'GET %s\\n' "$url" >> "$DEPLOY_TEST_LOG"
+    case "$url" in
+      */this-page-does-not-exist) printf 404 ;;
+      */index.php/archive/) printf 301 ;;
+      */blog/example|https://example.invalid/) printf 200 ;;
+      *) printf 404 ;;
+    esac
+    exit 0
+    ;;
+esac
 printf 'purge\\n' >> "$DEPLOY_TEST_LOG"
 printf '{"success":true}'
 `
@@ -311,7 +334,7 @@ printf '{"success":true}'
     ...process.env,
     PATH: `${bin}${path.delimiter}${process.env.PATH}`,
     DEPLOY_HOST: 'fixture.invalid',
-    WEB_ROOT: '/srv/blog',
+    WEB_ROOT: webRoot,
     SITE_HOST: 'example.invalid',
     STAGE_DIR: 'blog-stage',
     CF_API_TOKEN: 'fixture-token',
@@ -330,12 +353,12 @@ printf '{"success":true}'
   const flags = ['--skip-build', '--yes']
   const published = run(flags)
   assert.equal(published.status, 0, published.stderr)
-  assert.match(published.stdout, /发布到 \/srv\/blog（当前线上版本备份到 \/srv\/blog.prev）/)
+  assert.ok(published.stdout.includes(`发布到 ${webRoot}（当前线上版本备份到 ${webRoot}.prev）`))
   assert.match(published.stdout, /已发布：/)
   const calls = await fs.readFile(log, 'utf8')
-  assert.match(calls, /sudo rsync -a --delete '\/srv\/blog\/' '\/srv\/blog.prev\/'/)
-  assert.match(calls, /check \/ 200/)
-  assert.match(calls, /check '\/blog\/example' 200/)
+  assert.ok(calls.includes(`sudo rsync -a --delete '${webRoot}/' '${webRoot}.prev/'`))
+  assert.match(calls, /GET https:\/\/example.invalid\//)
+  assert.match(calls, /GET https:\/\/example.invalid\/blog\/example/)
   assert.match(calls, /purge/)
   await put(path.join(f.repoRoot, 'uncommitted.txt'), 'local change')
   const dirty = run([...flags, '--allow-dirty'])
