@@ -2,11 +2,15 @@ export function getTheme() {
   return localStorage.getItem('theme')
 }
 
-export function listenThemeChange(theme?: string) {
-  // If theme is specified, no need to listen window theme change
-  if (theme && theme !== 'system') return
+let listening = false
+
+export function listenThemeChange() {
+  if (listening) return
+  listening = true
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    setTheme(e.matches ? 'dark' : 'light')
+    if ((getTheme() ?? 'system') === 'system') {
+      setTheme(e.matches ? 'dark' : 'light')
+    }
   })
 }
 
@@ -16,7 +20,7 @@ export function setTheme(theme?: string, save = false) {
     if (!themes.includes(theme)) return
     if (save) localStorage.setItem('theme', theme)
   } else {
-    theme = getTheme() ?? undefined
+    theme = getTheme() ?? 'system'
     if (save) {
       // Set theme equals undefined, switch cycle in ['system', 'dark', 'light']
       const currentIndex = themes.indexOf(theme ?? 'system')
@@ -28,7 +32,7 @@ export function setTheme(theme?: string, save = false) {
   if (theme === 'system') {
     targetTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     // Listen theme change
-    listenThemeChange(theme)
+    listenThemeChange()
   }
 
   // Set theme
