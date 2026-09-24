@@ -4,6 +4,7 @@ import { Font } from 'astro:assets'
 import { prod } from 'astro-pure/server'
 import type { SiteMeta } from 'astro-pure/types'
 import config from 'virtual:config'
+import Counterscale from '@/components/Counterscale.astro'
 
 type Props = SiteMeta
 
@@ -96,13 +97,4 @@ const socialImageURL = new URL(ogImage ? ogImage : config.socialCard, Astro.url)
   )
 }
 
-{
-  prod && (
-    <script
-      is:inline
-      id='counterscale-script'
-      data-site-id='residream'
-      src='https://stats.residream.com/tracker.js'
-      defer></script>
-  )
-}
+{prod && <Counterscale />}

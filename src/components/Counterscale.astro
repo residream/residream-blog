@@ -1,0 +1,24 @@
+---
+// Loads the Counterscale tracker unless this browser has opted out of analytics.
+// Prerendered pages are counted only once they are actually shown.
+---
+
+<script is:inline>
+  ;(() => {
+    try {
+      if (localStorage.getItem('disable-metrics') !== null) return
+    } catch {}
+    const load = () => {
+      const script = document.createElement('script')
+      script.id = 'counterscale-script'
+      script.dataset.siteId = 'residream'
+      script.src = 'https://stats.residream.com/tracker.js'
+      document.head.append(script)
+    }
+    if (document.prerendering) {
+      document.addEventListener('prerenderingchange', load, { once: true })
+    } else {
+      load()
+    }
+  })()
+</script>
