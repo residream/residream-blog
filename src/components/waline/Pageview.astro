@@ -1,27 +1,21 @@
----
-// https://waline.js.org/en/guide/features/pageview.html#use-alone
-import config from '@/site-config'
----
+<script>
+  import { pageviewCount } from '@waline/client/pageview'
+  import config from 'virtual:config'
 
-<script
-  is:inline
-  type='module'
-  data-astro-rerun
-  define:vars={{ npmCDN: config.npmCDN, walineServer: config.integ.waline.server }}
->
-  async function loadPageview() {
-    try {
-      const pageview = await import(`${npmCDN}/@waline/client@v3/dist/pageview.js`)
-      const el = document.querySelector('.waline-pageview-count')
-      if (el) {
-        pageview.pageviewCount({
-          serverURL: walineServer,
-          path: window.location.pathname
-        })
-      }
-    } catch (e) {
-      console.error('Failed to load Waline pageview:', e)
-    }
+  let counted = false
+  const loadPageview = () => {
+    const serverURL = config.integ.waline.server
+    if (!serverURL || counted || !document.querySelector('.waline-pageview-count')) return
+    counted = true
+    pageviewCount({
+      serverURL,
+      path: window.location.pathname
+    })
   }
-  loadPageview()
+
+  if ((document as Document & { prerendering?: boolean }).prerendering) {
+    document.addEventListener('prerenderingchange', loadPageview, { once: true })
+  } else {
+    loadPageview()
+  }
 </script>

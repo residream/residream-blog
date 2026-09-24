@@ -5,10 +5,11 @@
 
 <script is:inline>
   ;(() => {
-    try {
-      if (localStorage.getItem('disable-metrics') !== null) return
-    } catch {}
     const load = () => {
+      try {
+        if (localStorage.getItem('disable-metrics') !== null) return
+      } catch {}
+      if (document.getElementById('counterscale-script')) return
       const script = document.createElement('script')
       script.id = 'counterscale-script'
       script.dataset.siteId = 'residream'
