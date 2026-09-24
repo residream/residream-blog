@@ -15,11 +15,13 @@ const { class: className, title, ...props } = Astro.props
     {...props}
   >
     <slot name='before' />
-    <div
-      class='group/highlight expand-title sticky top-0 z-20 flex cursor-pointer items-center justify-between py-1.5 group-[.expanded]/expand:bg-muted sm:py-2'
+    <button
+      type='button'
+      aria-expanded='false'
+      class='group/highlight expand-title sticky top-0 z-20 flex w-full cursor-pointer items-center justify-between py-1.5 text-start focus-visible:outline-primary group-[.expanded]/expand:bg-muted sm:py-2'
     >
-      <p class='m-0 transition-colors group-hover/highlight:text-primary'>{title}</p>
-      <div class='expand-button'>
+      <span class='m-0 transition-colors group-hover/highlight:text-primary'>{title}</span>
+      <span class='expand-button'>
         <svg
           xmlns='http://www.w3.org/2000/svg'
           width='16'
@@ -43,9 +45,10 @@ const { class: className, title, ...props } = Astro.props
             class='translate-x-1 duration-300 ease-in-out group-[.expanded]/expand:translate-x-0'
           ></polyline>
         </svg>
-      </div>
-    </div>
+      </span>
+    </button>
     <div
+      inert
       class='expand-content grid opacity-0 transition-all duration-300 ease-in-out group-[.expanded]/expand:mb-3 group-[.expanded]/expand:opacity-100 sm:group-[.expanded]/expand:mb-4'
     >
       <div class='overflow-hidden'>
@@ -57,16 +60,15 @@ const { class: className, title, ...props } = Astro.props
 
 <script>
   class Collapse extends HTMLElement {
-    constructor() {
-      super()
-    }
-
     connectedCallback() {
-      const expandTitle = this.querySelector('.expand-title')
-      // const expandable = this.querySelector('.expandable')
-      expandTitle?.addEventListener('click', () => {
-        this.classList.toggle('expanded')
-      })
+      const expandTitle = this.querySelector<HTMLButtonElement>('.expand-title')
+      const content = this.querySelector<HTMLElement>('.expand-content')
+      if (!expandTitle || !content) return
+      expandTitle.onclick = () => {
+        const expanded = this.classList.toggle('expanded')
+        expandTitle.setAttribute('aria-expanded', String(expanded))
+        content.inert = !expanded
+      }
     }
   }
   customElements.define('collapse-component', Collapse)
