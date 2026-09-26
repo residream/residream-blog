@@ -56,6 +56,7 @@ Markdown 格式、图片查找规则、仅导入、备份回滚和每日数据�
 - [Orac1e 学长](https://orac1e.me) 的 [博客源码](https://github.com/Byforacle/astro-blog)：博客改造与页面设计的参考。
 - [CWorld](https://cworld0.com) 与 [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure)：本项目使用的上游主题。
 - [Astro](https://astro.build)、[Pagefind](https://pagefind.app) 与 [Waline](https://github.com/walinejs/waline)：静态构建、全文搜索和评论。
+- [UptimeFlare](https://github.com/lyc8503/UptimeFlare)、[Counterscale](https://github.com/benvinegar/counterscale) 与 [CyberChef](https://github.com/gchq/CyberChef)：状态页、访问统计和在线工具。
 - [catzz](https://catzz.work)：站点使用的配图插画。
 
 ## 许可
