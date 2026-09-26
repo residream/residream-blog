@@ -2,8 +2,6 @@
 
 [residream.com](https://residream.com) 的源代码，记录网络安全、CTF、编程与学习笔记。
 
-> Trace to the Core, Race to the Root
-
 基于 [Astro](https://astro.build) 和 [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure) 构建，并按个人写作与维护习惯进行调整。
 
 [访问博客](https://residream.com) · [部署说明](./scripts/README.md) · [博客翻新日志](https://residream.com/blog/wordpress-astro)
