@@ -17,8 +17,10 @@ interface CacheEntry {
   data: GithubRepository
 }
 
+type RepositorySnapshot = GithubRepository & { updatedAt: string }
+
 const cacheAge = 24 * 60 * 60 * 1000
-const pending = new Map<string, Promise<GithubRepository | undefined>>()
+const pending = new Map<string, Promise<RepositorySnapshot | undefined>>()
 const fallback = snapshots as Record<string, CacheEntry>
 
 function validData(data: GithubRepository): boolean {
@@ -35,7 +37,7 @@ function validData(data: GithubRepository): boolean {
   )
 }
 
-async function load(repo: string): Promise<GithubRepository | undefined> {
+async function load(repo: string): Promise<RepositorySnapshot | undefined> {
   const key = repo.toLowerCase()
   const file = resolve('.astro/github-cards', `${key.replace('/', '--')}.json`)
   let cached = fallback[key]
@@ -45,7 +47,8 @@ async function load(repo: string): Promise<GithubRepository | undefined> {
   } catch {
     // A fresh checkout can use the checked-in public repository snapshots.
   }
-  if (cached && Date.now() - Date.parse(cached.fetchedAt) < cacheAge) return cached.data
+  if (cached && Date.now() - Date.parse(cached.fetchedAt) < cacheAge)
+    return { ...cached.data, updatedAt: cached.fetchedAt }
 
   try {
     const response = await fetch(`https://api.github.com/repos/${repo}`, {
@@ -73,14 +76,14 @@ async function load(repo: string): Promise<GithubRepository | undefined> {
     } catch {
       console.warn(`[GitHubCard] Could not save cache for ${repo}`)
     }
-    return data
+    return { ...data, updatedAt: entry.fetchedAt }
   } catch {
     console.warn(`[GitHubCard] ${repo}: using saved project information`)
-    return cached?.data
+    return cached ? { ...cached.data, updatedAt: cached.fetchedAt } : undefined
   }
 }
 
-export function getGithubRepository(repo: string): Promise<GithubRepository | undefined> {
+export function getGithubRepository(repo: string): Promise<RepositorySnapshot | undefined> {
   if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return Promise.resolve(undefined)
   const key = repo.toLowerCase()
   if (!pending.has(key)) pending.set(key, load(repo))

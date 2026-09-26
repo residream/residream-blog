@@ -1,0 +1,23 @@
+[Unit]
+Description=Refresh Residream public profile and repository statistics
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=residream-stats
+Group=residream-stats
+StateDirectory=residream-public-stats
+StateDirectoryMode=0755
+ExecStart=/usr/bin/python3 -B /opt/residream-public-stats/update.py --web-root /var/www/residream-blog --output /var/lib/residream-public-stats/public-stats.json
+TimeoutStartSec=180
+MemoryMax=64M
+CPUQuota=25%
+UMask=0022
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+

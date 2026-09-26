@@ -158,6 +158,18 @@ purge_cache() {
   esac
 }
 
+sync_public_stats() {
+  if ! remote "sudo test -f /etc/systemd/system/residream-public-stats.service"; then
+    warn "服务器尚未安装每日公开数据任务，安装说明见 scripts/README.md"
+    return 0
+  fi
+  rsync -az scripts/public-stats/update.py "$DEPLOY_HOST:${STAGE_DIR}-public-stats.py" || return
+  remote "sudo install -m 644 ~/'${STAGE_DIR}-public-stats.py' /opt/residream-public-stats/update.py.next &&
+    sudo mv /opt/residream-public-stats/update.py.next /opt/residream-public-stats/update.py &&
+    rm ~/'${STAGE_DIR}-public-stats.py' &&
+    sudo systemctl start --no-block residream-public-stats.service"
+}
+
 # rsync 差异转成「操作<TAB>路径」，用于发布前预览。
 live_changes() {
   rsync -azcn --delete --exclude=/.release --itemize-changes dist/ "$DEPLOY_HOST:$WEB_ROOT/" | awk '
@@ -241,7 +253,11 @@ step "与线上相比的改动"
 changes="$(live_changes)" || die "无法与线上比对（SSH 或 rsync 出错）"
 print_changes "$changes"
 if [ "$DRY_RUN" = 1 ]; then echo "  （只是预览，服务器没有改动）"; exit 0; fi
-if [ -z "$changes" ]; then echo "  线上已经是这个版本，不需要发布"; exit 0; fi
+if [ -z "$changes" ]; then
+  echo "  线上页面已经是这个版本"
+  sync_public_stats
+  exit 0
+fi
 confirm "  确认发布到线上？" || { echo "  已取消，线上没有改动。之后要发布时运行：bun run deploy"; exit 0; }
 
 step "上传到 $DEPLOY_HOST:~/$STAGE_DIR"
@@ -263,6 +279,9 @@ step "自检"
 verify || die "自检没有通过；要恢复上一个版本，运行：bun run deploy --rollback"
 status=0
 check_marker || status=1
+
+step "同步每日公开数据任务"
+sync_public_stats || { warn "每日公开数据任务同步失败，原有数据保留"; status=1; }
 
 step "清 Cloudflare 缓存"
 purge_cache || status=1

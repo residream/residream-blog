@@ -57,7 +57,7 @@ const numberFormat = Intl.NumberFormat('en-us', {
       {data?.description || '查看 GitHub 项目'}
     </p>
     {
-      data && (
+      (
         <div class='flex items-center justify-between gap-x-2'>
           <div class='flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-5'>
             <div class='flex items-center gap-x-1.5 sm:gap-x-2'>
@@ -83,10 +83,14 @@ const numberFormat = Intl.NumberFormat('en-us', {
 
               <span
                 data-gh='stars'
+                data-stat-key={`repo:${repo.toLowerCase()}:stars`}
+                data-stat-value={data?.stars}
+                data-stat-updated-at={data?.updatedAt}
+                data-stat-format='compact'
                 class='text-sm leading-tight sm:text-base'
-                title={String(data.stars)}
+                title={data ? String(data.stars) : undefined}
               >
-                {numberFormat.format(data.stars)}
+                {data ? numberFormat.format(data.stars) : '—'}
               </span>
             </div>
 
@@ -113,10 +117,14 @@ const numberFormat = Intl.NumberFormat('en-us', {
 
               <span
                 data-gh='forks'
+                data-stat-key={`repo:${repo.toLowerCase()}:forks`}
+                data-stat-value={data?.forks}
+                data-stat-updated-at={data?.updatedAt}
+                data-stat-format='compact'
                 class='text-sm leading-tight sm:text-base'
-                title={String(data.forks)}
+                title={data ? String(data.forks) : undefined}
               >
-                {numberFormat.format(data.forks)}
+                {data ? numberFormat.format(data.forks) : '—'}
               </span>
             </div>
 
@@ -141,12 +149,12 @@ const numberFormat = Intl.NumberFormat('en-us', {
                 </g>
               </svg>
               <span data-gh='license' class='text-sm leading-tight sm:text-base'>
-                {data.license || 'N/A'}
+                {data?.license || 'N/A'}
               </span>
             </div>
           </div>
           <span data-gh='language' class='text-sm leading-tight sm:text-base'>
-            {data.language || 'N/A'}
+            {data?.language || 'N/A'}
           </span>
         </div>
       )
