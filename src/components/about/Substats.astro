@@ -11,6 +11,7 @@ interface SubstatsItem {
   api?: string
   count?: number
   stale?: boolean
+  updatedAt?: string
 }
 
 type Props = {
@@ -46,6 +47,7 @@ async function fetchCount(item: SubstatsItem) {
       }
       item.count = count
       item.stale = false
+      item.updatedAt = new Date().toISOString()
       return
     } catch (error) {
       errors.push(error instanceof Error ? error.message : String(error))
@@ -60,7 +62,7 @@ await Promise.all(stats.map(fetchCount))
 
 <div class='grid grid-cols-1 gap-3 rounded-xl border p-2 sm:grid-cols-2 sm:p-3'>
   {
-    stats.map(({ link, platform, icon, color, count, text, stale }) => (
+    stats.map(({ link, platform, icon, color, count, text, stale, api, updatedAt }) => (
       <a
         class='group text-muted-foreground no-underline'
         href={link}
@@ -74,6 +76,9 @@ await Promise.all(stats.map(fetchCount))
           </div>
           <div class='flex items-center gap-1.5'>
             <samp
+              data-stat-key={api ? `account:${api}` : undefined}
+              data-stat-value={count}
+              data-stat-updated-at={updatedAt}
               title={
                 count == null
                   ? 'Statistics temporarily unavailable'

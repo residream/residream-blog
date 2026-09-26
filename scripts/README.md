@@ -44,7 +44,28 @@ draft: true
 <github-card data-repo="cworld1/astro-theme-pure"><a href="https://github.com/cworld1/astro-theme-pure">astro-theme-pure</a></github-card>
 ```
 
-构建时读取项目简介、Stars、Forks 和许可证，缓存 24 小时，直接写入页面。读者无需请求 GitHub API；接口暂时不可用时沿用缓存，首次构建也可使用已保存的公开项目资料。运行时缓存位于 `.astro/github-cards/`，不会提交到仓库。
+构建时读取项目简介、Stars、Forks 和许可证，缓存 24 小时，直接写入页面。接口暂时不可用时沿用缓存，首次构建也可使用已保存的公开项目资料。构建缓存位于 `.astro/github-cards/`，不会提交到仓库。Stars、Forks 上线后还会通过下面的每日任务更新。
+
+## 每日公开数据更新
+
+服务器每天北京时间 03:00 获取 GitHub 卡片的 Stars、Forks，以及 About 的 GitHub/Bilibili 粉丝数、Steam 游戏数和好友数。每个来源独立更新；超时、限流或无效响应时保留该项上次成功值，合法的 `0` 正常更新。部署后也会触发一次更新。
+
+任务从已经发布的页面自动识别仓库和账号，新增卡片或修改 About 的账号后正常部署即可。GitHub 贡献图、评论和访问统计继续使用各自的更新方式。
+
+页面先显示构建时的数字，仅在有相关数字的页面请求一次 `/data/public-stats.json`。数据比页面旧或请求失败时继续保留页面已有数字，不影响页面加载。浏览器无需访问第三方统计 API。
+
+数据文件保存在服务器 `/var/lib/residream-public-stats/public-stats.json`，逐项记录成功更新时间，写完后整体替换。它位于网站发布目录之外，部署、回滚不会覆盖，也不提交 Git。任务无需额外依赖，运行结束即退出，内存上限 64 MiB。
+
+服务文件位于 `scripts/public-stats/`，首次安装到服务器时：
+
+1. 创建系统用户 `residream-stats`，把 `update.py` 放入 `/opt/residream-public-stats/`，两个 systemd 文件放入 `/etc/systemd/system/`。
+2. 把 `nginx.conf` 放入 `/etc/nginx/snippets/residream-public-stats.conf`，在主站 `server` 中引用并验证配置后重新加载。
+3. 在 Cloudflare 添加仅匹配 `/data/public-stats.json` 的缓存规则，排在现有规则之后，边缘与浏览器缓存均遵循源站的 10 分钟缓存头。
+4. 重新加载 systemd 配置并启用 `residream-public-stats.timer`。首次发布带数据标记的页面后启动 `residream-public-stats.service`。
+
+现有服务器已按此方式配置。后续 `bun run deploy` 会同步采集脚本并触发更新；修改服务、定时器或 Nginx 配置时需单独同步对应文件。若调整 `WEB_ROOT`，同时调整服务文件的 `--web-root`。
+
+维护时查看 `residream-public-stats.timer` 的下次运行时间，以及 `residream-public-stats.service` 的日志；日志会列出失败并沿用旧值的数据来源。
 
 ## 图片放在哪里
 

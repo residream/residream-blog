@@ -1,0 +1,11 @@
+[Unit]
+Description=Update Residream public statistics daily
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 Asia/Shanghai
+Persistent=true
+AccuracySec=1min
+Unit=residream-public-stats.service
+
+[Install]
+WantedBy=timers.target
