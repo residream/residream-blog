@@ -54,6 +54,17 @@
       "avatar": "https://avatars.githubusercontent.com/u/36782264?v=4"
     }
   },
+  "pagefind/pagefind": {
+    "fetchedAt": "2026-09-26T13:26:48.197576Z",
+    "data": {
+      "description": "Static low-bandwidth search at scale",
+      "stars": 5483,
+      "forks": 207,
+      "language": "Rust",
+      "license": "MIT",
+      "avatar": "https://avatars.githubusercontent.com/u/210627640?v=4"
+    }
+  },
   "walinejs/waline": {
     "fetchedAt": "2026-09-23T09:48:59.661014Z",
     "data": {
