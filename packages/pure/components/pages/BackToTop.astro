@@ -18,7 +18,7 @@ const { header: headerName, content: contentName, needPercent = true } = Astro.p
       <div
         class='top-text absolute bottom-0 end-0 start-0 top-0 flex items-center justify-center group-[.ended]:opacity-0'
       >
-        <span class='text'>10</span>
+        <span class='text'>0</span>
         <span class='text-xs'>%</span>
       </div>
       <Icon name='up' class='top-icon group-[.ended]:opacity-100' />
@@ -33,20 +33,20 @@ const { header: headerName, content: contentName, needPercent = true } = Astro.p
     scrollPercentEl
     targetHeader
     articleEl
-    scrollHeight = 0
-    articleTop = 0
-    clientHeight = 0
-    ticking = false
+    headerObserver
+    contentObserver
+    scrollFrame = 0
     needPercent = true
 
     calculateScrollPercent() {
       const scrollTop = Math.max(0, window.scrollY || document.documentElement.scrollTop)
+      const articleTop = this.articleEl.getBoundingClientRect().top + scrollTop
       // Before article
-      if (scrollTop < this.articleTop) return 0
-      const maxScrollable = this.scrollHeight - this.clientHeight
+      if (scrollTop < articleTop) return 0
+      const maxScrollable = this.articleEl.scrollHeight - document.documentElement.clientHeight
       // After article
       if (maxScrollable <= 0) return 100
-      const progress = Math.min(scrollTop - this.articleTop, maxScrollable)
+      const progress = Math.min(scrollTop - articleTop, maxScrollable)
       return Math.round((progress / maxScrollable) * 100)
     }
 
@@ -54,7 +54,14 @@ const { header: headerName, content: contentName, needPercent = true } = Astro.p
       const percent = this.calculateScrollPercent()
       this.scrollPercentEl.textContent = percent.toString()
       this.actionBtns.classList.toggle('ended', percent >= 100)
-      this.ticking = false
+    }
+
+    scheduleUpdate = () => {
+      if (this.scrollFrame) return
+      this.scrollFrame = requestAnimationFrame(() => {
+        this.scrollFrame = 0
+        this.updateScrollPercent()
+      })
     }
 
     connectedCallback() {
@@ -67,36 +74,44 @@ const { header: headerName, content: contentName, needPercent = true } = Astro.p
 
       if (!this.articleEl) {
         console.error(`Element with ID ${contentName} not found.`)
-        needPercent = false
+        this.needPercent = false
       }
       // Scroll to top action
       this.scrollBtn.addEventListener('click', this)
       // Observe header visibility
       if (this.targetHeader) {
-        const observer = new IntersectionObserver((entries) => {
+        this.headerObserver = new IntersectionObserver((entries) => {
           entries.forEach((entry) => {
             this.actionBtns.classList.toggle('show', !entry.isIntersecting)
           })
         })
-        observer.observe(this.targetHeader)
+        this.headerObserver.observe(this.targetHeader)
       } else {
         console.error(`Element with ID ${headerName} not found.`)
       }
       // Scroll percent update
       if (this.needPercent) {
-        this.scrollHeight = this.articleEl.scrollHeight
-        this.articleTop = this.articleEl.offsetTop
-        this.clientHeight = document.documentElement.clientHeight
-
-        document.addEventListener('scroll', () => {
-          if (!this.ticking) {
-            requestAnimationFrame(() => this.updateScrollPercent())
-            this.ticking = true
-          }
-        })
+        document.addEventListener('scroll', this.scheduleUpdate, { passive: true })
+        window.addEventListener('resize', this.scheduleUpdate)
+        this.articleEl.addEventListener('animationend', this.scheduleUpdate)
+        this.contentObserver = new ResizeObserver(this.scheduleUpdate)
+        this.contentObserver.observe(this.articleEl)
+        if (this.targetHeader) this.contentObserver.observe(this.targetHeader)
+        this.updateScrollPercent()
       } else {
         this.actionBtns.classList.add('ended')
       }
+    }
+
+    disconnectedCallback() {
+      this.scrollBtn?.removeEventListener('click', this)
+      document.removeEventListener('scroll', this.scheduleUpdate)
+      window.removeEventListener('resize', this.scheduleUpdate)
+      this.articleEl?.removeEventListener('animationend', this.scheduleUpdate)
+      this.headerObserver?.disconnect()
+      this.contentObserver?.disconnect()
+      cancelAnimationFrame(this.scrollFrame)
+      this.scrollFrame = 0
     }
 
     handleEvent(event) {
