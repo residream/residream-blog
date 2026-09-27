@@ -108,6 +108,7 @@ export async function buildSiteUI(root: string, config: SiteConfig) {
       rule.selector = rule.selector.replace('footer', '.rd-footer')
   })
   const animation = globalCSS.split('/* [Katex] */')[0]!
+  const scrollbar = required(globalCSS, /\/\* Scroll bar \*\/([\s\S]+)/, 'scrollbar styles')
   const css = [
     fontCSS,
     reset.toString(),
@@ -117,6 +118,7 @@ export async function buildSiteUI(root: string, config: SiteConfig) {
       .replace(/\bfooter a\b/g, '.rd-footer a'),
     scopedTheme.toString(),
     namespace(animation),
+    scrollbar,
     appCSS
   ].join('\n')
   return { css, fonts }
