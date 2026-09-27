@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto'
-import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { buildSiteUI } from '../packages/site-ui/build'
 import { renderFooter, renderHeader, type SiteConfig } from '../packages/site-ui/render'
 import { theme } from '../src/site.config'
 
@@ -36,7 +37,8 @@ const sites = [
   }
 ]
 const config = theme as SiteConfig
-const files = ['style.css', 'bootstrap.js', 'client.js', 'render.ts']
+const { css, fonts } = await buildSiteUI(root, config)
+const files = ['bootstrap.js', 'client.js', 'render.ts']
 const hash = createHash('sha256').update(
   JSON.stringify({
     title: config.title,
@@ -47,8 +49,8 @@ const hash = createHash('sha256').update(
   })
 )
 for (const name of files) hash.update(await readFile(join(source, name)))
-for (const name of (await readdir(join(source, 'fonts'))).sort())
-  hash.update(await readFile(join(source, 'fonts', name)))
+hash.update(css)
+for (const path of fonts.values()) hash.update(await readFile(path))
 const version = hash.digest('hex').slice(0, 16)
 const bootstrap = await readFile(join(source, 'bootstrap.js'), 'utf8')
 
@@ -59,8 +61,11 @@ for (const site of sites) {
   const assetsRoot = join(target, site.assets)
   const output = join(assetsRoot, version)
   await mkdir(output, { recursive: true })
-  for (const name of ['style.css', 'client.js']) await cp(join(source, name), join(output, name))
-  await cp(join(source, 'fonts'), join(output, 'fonts'), { recursive: true })
+  await writeFile(join(output, 'style.css'), css)
+  await cp(join(source, 'client.js'), join(output, 'client.js'))
+  await mkdir(join(output, 'fonts'), { recursive: true })
+  for (const [name, path] of fonts) await cp(path, join(output, 'fonts', name))
+  await cp(join(source, 'fonts/README.md'), join(output, 'fonts/README.md'))
   await cp(join(root, 'LICENSE'), join(output, 'LICENSE'))
   const base = `/site-ui/${version}`
   const manifest = {

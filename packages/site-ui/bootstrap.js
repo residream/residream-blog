@@ -35,6 +35,9 @@
     root.dataset.rdTheme = resolved
     root.classList.toggle('dark', resolved === 'dark')
     root.dataset.mantineColorScheme = resolved
+    document.querySelectorAll('[data-rd-theme-toggle]').forEach((button) => {
+      button.dataset.theme = preference
+    })
     document
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute('content', resolved === 'dark' ? '#0B0B10' : '#FCFCFD')

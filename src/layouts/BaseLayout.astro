@@ -30,7 +30,7 @@ const {
     <ThemeProvider />
   </head>
 
-  <body class='rd-body' {...props}>
+  <body class='flex justify-center bg-background text-foreground' {...props}>
     {
       highlightColor && (
         <div
@@ -40,9 +40,12 @@ const {
         />
       )
     }
-    <div id='main-container' class='rd-shell'>
+    <div
+      id='main-container'
+      class='w-full max-w-[70rem] min-h-[100dvh] flex flex-col justify-between'
+    >
       <Header />
-      <div class='rd-main'>
+      <div class='flex-1 w-full'>
         <slot />
       </div>
       <Footer />

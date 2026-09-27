@@ -1,0 +1,93 @@
+/* Only app-specific structure belongs here. The blog never imports this file. */
+:root {
+  --rd-font: var(--font-satoshi);
+}
+body.rd-body {
+  display: block;
+  margin: 0;
+  min-width: 320px;
+  font-family: var(--font-satoshi);
+  line-height: 1.5;
+}
+.rd-shell {
+  position: relative;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+.rd-main,
+.rd-section-content {
+  min-width: 0;
+}
+.rd-sections {
+  margin-inline: auto;
+}
+.rd-section-heading h2 {
+  margin: 0;
+  font: inherit;
+}
+.rd-fragment {
+  display: contents;
+}
+.rd-app-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+.rd-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: 0 0 auto;
+  height: 100vh;
+  opacity: 0.25;
+  background: linear-gradient(#659eb9, transparent);
+}
+.rd-header,
+.rd-footer {
+  font-family: var(--font-satoshi);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.rd-app-header {
+  min-height: 2.75rem;
+  gap: 1rem;
+}
+.rd-breadcrumb,
+.rd-current-page {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+}
+.rd-breadcrumb {
+  flex-wrap: wrap;
+  row-gap: 0.125rem;
+}
+.rd-current-page {
+  white-space: nowrap;
+}
+.rd-separator {
+  font-weight: 400;
+  color: hsl(var(--muted-foreground));
+}
+.rd-credit {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+body.rd-body > [role='status'] {
+  z-index: 10000;
+  inset-inline: 0;
+  width: fit-content;
+  max-width: calc(100% - 2rem);
+  margin-inline: auto;
+}
+@media (max-width: 639px) {
+  .rd-breadcrumb .rd-brand,
+  .rd-breadcrumb .rd-separator {
+    display: none;
+  }
+  .rd-credit {
+    text-align: center;
+  }
+}

@@ -1,7 +1,13 @@
 import type { TypographyOptions } from '@unocss/preset-typography'
 import { defineConfig, presetMini, presetTypography, type Rule } from 'unocss'
 
-import { integ } from './src/site.config.ts'
+import { renderFooter, renderHeader } from './packages/site-ui/render'
+import { integ, theme as siteTheme } from './src/site.config.ts'
+
+const siteMarkup = renderHeader(siteTheme) + renderFooter(siteTheme)
+const siteClasses = [...siteMarkup.matchAll(/(?:class|data-rd-toast-class)="([^"]+)"/g)].flatMap(
+  (match) => match[1]!.split(/\s+/)
+)
 
 const typographyCustom = integ.typography || {}
 
@@ -182,6 +188,7 @@ export default defineConfig({
   },
   // https://unocss.dev/guide/extracting#limitations
   safelist: [
+    ...siteClasses,
     // TOC
     'rounded-t-2xl',
     'rounded-b-2xl',
