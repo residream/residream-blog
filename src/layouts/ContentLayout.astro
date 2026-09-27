@@ -101,12 +101,12 @@ const { meta, highlightColor, back = '/', ...props } = Astro.props
   })
 </script>
 <style>
-  @media (min-width: 769px) {
+  @media (min-width: 768px) {
     #sidebar-shade {
       display: none !important;
     }
   }
-  @media (max-width: 769px) {
+  @media (max-width: 767px) {
     aside.show {
       display: block !important;
       opacity: 1;
@@ -147,7 +147,7 @@ const { meta, highlightColor, back = '/', ...props } = Astro.props
       animation: 300ms fade-in;
     }
   }
-  @media (max-width: 640px) {
+  @media (max-width: 639px) {
     aside {
       min-width: 55vw !important;
     }

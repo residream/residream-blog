@@ -60,12 +60,12 @@ const {
           var(--highlightColor) 40%,
           hsl(var(--foreground)/var(--un-text-opacity, 1))
         );
-        color: var(--highlight-fg, hsl(var(--primary) / var(--un-text-opacity))) !important;
+        color: var(--highlight-fg, hsl(var(--primary) / var(--un-text-opacity, 1))) !important;
       }
       :global(.highlight-bg) {
         background-color: var(
           --highlightColor,
-          hsl(var(--primary) / var(--un-text-opacity))
+          hsl(var(--primary) / var(--un-bg-opacity, 1))
         ) !important;
       }
     </style>

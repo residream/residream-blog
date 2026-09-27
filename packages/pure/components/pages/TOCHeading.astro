@@ -15,8 +15,7 @@ const text = rawText.endsWith('#') ? rawText.slice(0, -1) : rawText
 
 <li>
   <div class='relative'>
-    <span
-      class='absolute top-[5%] w-[2px] rounded transition-colors duration-300 [&.highlight-bg]:bg-primary [&.is-read]:bg-border'
+    <span class='toc-progress absolute top-[5%] w-[2px] rounded transition-colors duration-300'
     ></span>
     <a
       aria-label={`Scroll to section: ${text}`}
@@ -37,3 +36,13 @@ const text = rawText.endsWith('#') ? rawText.slice(0, -1) : rawText
     )
   }
 </li>
+
+<style>
+  .toc-progress.highlight-bg {
+    background-color: hsl(var(--primary));
+  }
+
+  .toc-progress.is-read {
+    background-color: hsl(var(--border));
+  }
+</style>

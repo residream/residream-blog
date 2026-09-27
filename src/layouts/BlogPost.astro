@@ -40,7 +40,7 @@ const socialImage = heroImage
     : (await getImage({ src: heroImage.src })).src
   : config.socialCard
 const articleDate = publishDate.toISOString()
-const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--un-text-opacity))'
+const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--un-bg-opacity, 1))'
 const contentParts = body?.includes('<github-card')
   ? splitGithubCards(await Astro.slots.render('default'))
   : null
