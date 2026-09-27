@@ -51,6 +51,12 @@ bun run deploy "$HOME/Desktop/Blog/文章.md" --dry-run
 
 Markdown 格式、图片查找规则、仅导入、备份回滚和每日数据更新的完整说明见 [scripts/README.md](./scripts/README.md)。
 
+## 关联站点外观
+
+博客、访问统计、网站状态和在线工具共用 [packages/site-ui](./packages/site-ui/README.md) 中的页头、页脚、主题和分区布局。修改公共外观后，在主站执行 `bun run ui:sync`，将固定版本资源同步到同级的三个项目，再分别构建和发布。
+
+各站自带全部外观资源，可以独立运行。同步脚本不会提交代码或部署网站。
+
 ## 致谢
 
 - [Orac1e 学长](https://orac1e.me) 的 [博客源码](https://github.com/Byforacle/astro-blog)：博客改造与页面设计的参考。

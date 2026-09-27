@@ -19,7 +19,8 @@
     "deploy": "bash scripts/deploy.sh",
     "backup": "bash scripts/backup.sh",
     "test:deploy": "node --test scripts/import-post.test.mjs",
-    "cache:avatars": "bun preset/scripts/cacheAvatars.ts"
+    "cache:avatars": "bun preset/scripts/cacheAvatars.ts",
+    "ui:sync": "bun scripts/sync-site-ui.ts"
   },
   "dependencies": {
     "@astrojs/check": "0.9.10",
