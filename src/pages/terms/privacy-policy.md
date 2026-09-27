@@ -2,7 +2,7 @@
 layout: '@/layouts/IndividualPage.astro'
 
 title: 'Privacy Policy'
-description: '最后更新：2026-09-23'
+description: '最后更新：2026-09-27'
 language: 'Zh'
 back: '/terms'
 ---
@@ -42,11 +42,14 @@ Counterscale 不使用 Cookie，也不在你的浏览器中写入存储。
 
 统计看板是公开的，任何人都可以查看：<https://stats.residream.com>
 
+## 外观偏好
+
+你选择的外观（跟随系统、浅色或深色）保存在浏览器的本地存储和名为 `residream-theme` 的 Cookie 中。这个 Cookie 作用于 residream.com 及其子站，让博客、访问统计、网站状态和在线工具显示相同的外观。浏览器访问这些站点时会随请求带上它，但它只记录外观选择，不包含任何身份信息。
+
 ## 第三方资源
 
 页面会从以下第三方加载资源，它们可能因此获知你的 IP 与 User Agent：
 
-- 字体服务 Fontshare
 - 统计接口 Substats，用于展示 GitHub、Steam 等平台的公开数字
 - 语录接口 一言（hitokoto），用于首页底部的随机句子
 
