@@ -1,7 +1,6 @@
 ;(() => {
   if (window.ResidreamUI) return
   const modes = ['system', 'dark', 'light']
-  const root = document.documentElement
   const system = window.matchMedia('(prefers-color-scheme: dark)')
   let sessionPreference = 'system'
   function shared() {
@@ -28,6 +27,7 @@
     return shared() || stored() || sessionPreference
   }
   function setTheme(preference = read(), save = false) {
+    const root = document.documentElement
     if (!modes.includes(preference)) preference = 'system'
     sessionPreference = preference
     const resolved = preference === 'system' ? (system.matches ? 'dark' : 'light') : preference
@@ -60,6 +60,7 @@
     if (event.key === 'theme') setTheme()
   })
   window.addEventListener('pageshow', () => setTheme())
+  window.addEventListener('focus', () => setTheme())
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) setTheme()
   })

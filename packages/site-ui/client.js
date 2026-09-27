@@ -2,6 +2,7 @@
   if (customElements.get('rd-header')) return
   class SiteHeader extends HTMLElement {
     connectedCallback() {
+      window.ResidreamUI?.setTheme()
       this.controller?.abort()
       this.controller = new AbortController()
       const options = { signal: this.controller.signal }

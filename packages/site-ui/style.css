@@ -118,7 +118,6 @@ body.rd-body {
 }
 .rd-app-header {
   gap: 1rem;
-  margin-bottom: 2rem;
 }
 .rd-breadcrumb {
   display: flex;
