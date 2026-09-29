@@ -43,6 +43,17 @@ export default defineConfig({
   // Static output, served by nginx on the ECS
   output: 'static',
   compressHTML: true,
+  vite: {
+    build: { sourcemap: false },
+    environments: {
+      client: {
+        build: {
+          sourcemap: false,
+          rolldownOptions: { output: { chunkFileNames: '_astro/[hash].js' } }
+        }
+      }
+    }
+  },
 
   // [Assets]
   image: {
