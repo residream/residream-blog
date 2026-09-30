@@ -3,6 +3,7 @@ import { Button, Collapse, Icon } from 'astro-pure/user'
 import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
 import Sponsorship from '@/components/projects/Sponsorship.astro'
+import { getLocale } from '@/utils/i18n'
 import alipay from '@/assets/alipay-qrcode.jpg'
 import wechat from '@/assets/wechat-qrcode.jpg'
 
@@ -40,7 +41,7 @@ const headings = [
         description: 'A blog, built with Astro and Astro Theme Pure',
         links: [
           { type: 'github', href: 'https://github.com/residream/residream-blog' },
-          { type: 'site', href: 'https://residream.com' }
+          { type: 'site', href: getLocale(Astro.url) === 'en' ? '/en' : 'https://residream.com' }
         ]
       },
       {

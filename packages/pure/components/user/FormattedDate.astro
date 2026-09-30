@@ -1,6 +1,8 @@
 ---
 import type { HTMLAttributes } from 'astro/types'
 
+import { getLocale } from '@/utils/i18n'
+
 import { cn, getFormattedDate } from '../../utils'
 
 type Props = HTMLAttributes<'time'> & {
@@ -11,7 +13,7 @@ type Props = HTMLAttributes<'time'> & {
 
 const { date, dateTimeOptions, class: className, ...attrs } = Astro.props
 
-const postDate = getFormattedDate(date, dateTimeOptions)
+const postDate = getFormattedDate(date, dateTimeOptions, getLocale(Astro.url))
 ---
 
 <span class={cn('text-muted-foreground font-mono', className)} {...attrs}>

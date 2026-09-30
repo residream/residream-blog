@@ -3,10 +3,11 @@ import { PostPreview } from 'astro-pure/components/pages'
 import { getBlogCollection, groupCollectionsByYear, sortMDByDate } from 'astro-pure/server'
 import { Button } from 'astro-pure/user'
 import PageLayout from '@/layouts/BaseLayout.astro'
+import { blogCollection, getLocale, localePath } from '@/utils/i18n'
 
 export const prerender = true
 
-const allPosts = await getBlogCollection()
+const allPosts = await getBlogCollection(blogCollection(getLocale(Astro.url)))
 const allPostsByDate = sortMDByDate(allPosts)
 const allPostsByYear = groupCollectionsByYear(allPostsByDate)
 
@@ -17,7 +18,7 @@ const meta = {
 ---
 
 <PageLayout {meta}>
-  <Button title='Back' href='/blog' variant='back' />
+  <Button title='Back' href={localePath('/blog', getLocale(Astro.url))} variant='back' />
 
   <main class='mt-6 lg:mt-10'>
     <div id='content-header' class='animate'>

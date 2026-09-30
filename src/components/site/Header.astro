@@ -1,7 +1,96 @@
 ---
 import config from 'virtual:config'
 
+import { getLocale, localePath } from '@/utils/i18n'
+import { languageLinks } from '@/utils/locale-routes'
+
 import { renderHeader } from '../../../packages/site-ui/render'
+
+const locale = getLocale(Astro.url)
+const { href } = await languageLinks(Astro.url)
+const localizedConfig = {
+  ...config,
+  header: {
+    ...config.header,
+    menu: config.header.menu?.map((item) => ({ ...item, link: localePath(item.link, locale) }))
+  }
+}
 ---
 
-<Fragment set:html={renderHeader(config)} />
+<Fragment
+  set:html={renderHeader(localizedConfig, '', {
+    homePath: localePath('/', locale),
+    searchPath: localePath('/search', locale),
+    language: { locale, href }
+  })}
+/>
+
+<style is:global>
+  [data-language-switch] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  [data-language-switch]:hover {
+    color: hsl(var(--primary));
+  }
+  [data-language-switch][aria-disabled='true'] {
+    opacity: 0.45;
+    cursor: help;
+  }
+  [data-language-switch] path {
+    transition: transform 180ms ease;
+  }
+  [data-language-switch][data-locale='zh-CN'] .language-glyph-en {
+    transform: translate(10px, 8px);
+  }
+  [data-language-switch][data-locale='zh-CN'] .language-glyph-zh {
+    transform: translate(-10px, -8px);
+  }
+  @media (max-width: 360px) {
+    .rd-header [data-rd-header-controls] {
+      column-gap: 0.25rem;
+    }
+    .rd-header.not-top {
+      padding-inline: 0;
+    }
+    .rd-header.not-top .rd-brand {
+      margin-inline-start: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-language-switch] path {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const toggle = document.querySelector<HTMLAnchorElement>('[data-language-switch]')
+  toggle?.addEventListener('click', (event) => {
+    if (!toggle.href) {
+      document.dispatchEvent(new CustomEvent('toast', { detail: { message: toggle.title } }))
+      return
+    }
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+      return
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    event.preventDefault()
+    if (toggle.dataset.switching) return
+    toggle.dataset.switching = 'true'
+    toggle.dataset.locale = toggle.dataset.locale === 'en' ? 'zh-CN' : 'en'
+    window.setTimeout(() => window.location.assign(toggle.href), 180)
+  })
+  toggle?.addEventListener('keydown', (event) => {
+    if (!toggle.href && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault()
+      toggle.click()
+    }
+  })
+  window.addEventListener('pageshow', () => {
+    if (!toggle) return
+    toggle.dataset.locale = document.documentElement.lang
+    delete toggle.dataset.switching
+  })
+</script>

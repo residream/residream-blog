@@ -1,0 +1,12 @@
+---
+import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
+
+import Post from '../../blog/[...id].astro'
+
+export async function getStaticPaths() {
+  const posts = sortMDByDate(await getBlogCollection('blogEn'))
+  return posts.map((post) => ({ params: { id: post.id }, props: { post, posts } }))
+}
+---
+
+<Post {...Astro.props} />

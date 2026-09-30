@@ -1,6 +1,7 @@
 ---
 import { cn } from 'astro-pure/utils'
 import Pageview from '@/components/waline/Pageview.astro'
+import { withoutLocale } from '@/utils/i18n'
 
 interface Props {
   view?: boolean
@@ -10,7 +11,7 @@ interface Props {
 
 const { view, comment, class: className, ...props } = Astro.props
 
-const path = Astro.url.pathname
+const path = withoutLocale(Astro.url.pathname)
 ---
 
 <div class={cn('text-base text-sm text-muted-foreground', className)} {...props}>

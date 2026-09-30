@@ -1,0 +1,19 @@
+---
+import type { GetStaticPaths } from 'astro'
+
+import { getBlogCollection, getUniqueTagsWithCount, sortMDByDate } from 'astro-pure/server'
+import config from '@/site-config'
+
+import Blog from '../../blog/[...page].astro'
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const collections = sortMDByDate(await getBlogCollection('blogEn'))
+  const uniqueTags = getUniqueTagsWithCount(collections).map(([tag]) => tag)
+  return paginate(collections, {
+    pageSize: config.content.blogPageSize,
+    props: { uniqueTags, collectionsCount: collections.length }
+  })
+}) satisfies GetStaticPaths
+---
+
+<Blog {...Astro.props} />

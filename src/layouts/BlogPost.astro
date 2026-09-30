@@ -17,8 +17,8 @@ import { splitGithubCards } from '@/utils/github-cards'
 import GithubCard from '../../packages/pure/components/advanced/GithubCard.astro'
 
 interface Props {
-  post: CollectionEntry<'blog'>
-  posts: CollectionEntry<'blog'>[]
+  post: CollectionEntry<'blog' | 'blogEn'>
+  posts: CollectionEntry<'blog' | 'blogEn'>[]
   headings: MarkdownHeading[]
   remarkPluginFrontmatter: Record<string, unknown>
 }

@@ -1,6 +1,8 @@
 ---
 import type { CollectionEntry, CollectionKey } from 'astro:content'
 
+import { getLocale, localePath } from '@/utils/i18n'
+
 import { cn } from '../../utils'
 
 type Props = {
@@ -11,7 +13,7 @@ type Props = {
 
 // Get the requested entry
 const { id, collections, class: className } = Astro.props
-const path = Astro.url.pathname.split('/').slice(0, 2).join('/')
+const path = localePath('/blog', getLocale(Astro.url))
 
 // Get the next and prev entries (modulo to wrap index)
 const index = collections.findIndex((x) => x.id === id)

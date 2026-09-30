@@ -9,6 +9,7 @@ import PageLayout from '@/layouts/BaseLayout.astro'
 import ProjectCard from '@/components/home/ProjectCard.astro'
 import Section from '@/components/home/Section.astro'
 import SkillLayout from '@/components/home/SkillLayout.astro'
+import { blogCollection, getLocale, localePath, uiText } from '@/utils/i18n'
 import config from '@/site-config'
 
 const languages = ['C/C++', 'Python', 'JavaScript', 'SQL']
@@ -16,8 +17,9 @@ const frontend = ['Astro']
 const backend = ['Nginx', 'Flask']
 const security = ['BurpSuite']
 
+const locale = getLocale(Astro.url)
 const MAX_POSTS = 10
-const allPosts = await getBlogCollection()
+const allPosts = await getBlogCollection(blogCollection(locale))
 const allPostsByDate = sortMDByDate(allPosts).slice(0, MAX_POSTS)
 
 const imagePath = config.logo.src
@@ -62,7 +64,12 @@ if (!images[imagePath])
           CTF web challenges and some penetration testing. Here I share writeups and learning notes.
           Welcome to visit!
         </p>
-        <Button title='More about me' class='w-fit self-end' href='/about' variant='ahead' />
+        <Button
+          title='More about me'
+          class='w-fit self-end'
+          href={localePath('/about', locale)}
+          variant='ahead'
+        />
       </Section>
       {
         allPostsByDate.length > 0 && (
@@ -74,7 +81,12 @@ if (!images[imagePath])
                 </li>
               ))}
             </ul>
-            <Button title='More posts' class='w-fit self-end' href='/blog' variant='ahead' />
+            <Button
+              title='More posts'
+              class='w-fit self-end'
+              href={localePath('/blog', locale)}
+              variant='ahead'
+            />
           </Section>
         )
       }
@@ -83,7 +95,11 @@ if (!images[imagePath])
         <Card
           as='a'
           heading='Jilin University'
-          subheading='计算机科学与技术学院 - 网络空间安全 - 本科'
+          subheading={uiText(
+            'home.education.subheading',
+            '计算机科学与技术学院 - 网络空间安全 - 本科',
+            locale
+          )}
           date='September 2025 - Present'
           href='https://ccst.jlu.edu.cn/'
         >
@@ -98,27 +114,27 @@ if (!images[imagePath])
       <Section title='Website List'>
         <div class='grid grid-cols-1 gap-3 sm:grid-cols-2'>
           <ProjectCard
-            href='https://residream.com'
+            href={locale === 'en' ? '/en' : 'https://residream.com'}
             heading='Residream の blog'
-            subheading='🌍 博客主站'
+            subheading={uiText('home.websites.blog.subheading', '🌍 博客主站', locale)}
             imagePath='/src/assets/projects/falling-stars.jpg'
           />
           <ProjectCard
             href='https://stats.residream.com'
             heading='Visitor analytics'
-            subheading='📈 访问统计'
+            subheading={uiText('home.websites.analytics.subheading', '📈 访问统计', locale)}
             imagePath='/src/assets/projects/pepsi.jpg'
           />
           <ProjectCard
             href='https://status.residream.com'
             heading='Website status'
-            subheading='📊 网站状态'
+            subheading={uiText('home.websites.status.subheading', '📊 网站状态', locale)}
             imagePath='/src/assets/projects/destination-unknown.jpg'
           />
           <ProjectCard
             href='https://chef.residream.com'
             heading='Online tools'
-            subheading='🪄 在线工具'
+            subheading={uiText('home.websites.tools.subheading', '🪄 在线工具', locale)}
             imagePath='/src/assets/projects/playing-grown-up.jpg'
           />
         </div>
@@ -131,6 +147,6 @@ if (!images[imagePath])
         <SkillLayout title='Security' skills={security} />
       </Section>
     </div>
-    <Quote class='mt-12' />
+    <Quote class='mt-12' sentence={locale === 'en' ? config.description : undefined} />
   </main>
 </PageLayout>

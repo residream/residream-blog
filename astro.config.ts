@@ -30,6 +30,11 @@ export default defineConfig({
   // https://astro-pure.js.org/docs/setup/deployment#platform-with-base-path
   // base: '/astro-pure/',
   trailingSlash: 'never',
+  i18n: {
+    defaultLocale: 'zh-CN',
+    locales: ['zh-CN', 'en'],
+    routing: { prefixDefaultLocale: false }
+  },
   // root: './my-project-directory',
   server: { host: true },
   // https://docs.astro.build/en/guides/prefetch/

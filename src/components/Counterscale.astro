@@ -6,6 +6,7 @@
 <script is:inline>
   ;(() => {
     const load = () => {
+      if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) return
       try {
         if (localStorage.getItem('disable-metrics') !== null) return
       } catch {}

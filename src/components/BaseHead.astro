@@ -1,10 +1,12 @@
 ---
 import { Font } from 'astro:assets'
+import config from 'virtual:config'
 
 import { prod } from 'astro-pure/server'
 import type { SiteMeta } from 'astro-pure/types'
-import config from 'virtual:config'
 import Counterscale from '@/components/Counterscale.astro'
+import { getLocale, localePath } from '@/utils/i18n'
+import { languageLinks } from '@/utils/locale-routes'
 
 type Props = SiteMeta
 
@@ -13,10 +15,15 @@ const { articleDate, description, ogImage, title } = Astro.props
 const siteTitle = `${title} ${config.titleDelimiter} ${config.title}`
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 const socialImageURL = new URL(ogImage ? ogImage : config.socialCard, Astro.url).href
+const locale = getLocale(Astro.url)
+const { alternates } = await languageLinks(Astro.url)
 ---
 
 <meta charset='utf-8' />
-<meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover' name='viewport' />
+<meta
+  content='width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover'
+  name='viewport'
+/>
 <meta content='IE=edge' http-equiv='X-UA-Compatible' />
 <title>{siteTitle}</title>
 
@@ -38,6 +45,11 @@ const socialImageURL = new URL(ogImage ? ogImage : config.socialCard, Astro.url)
 
 {/* Canonical URL */}
 <link rel='canonical' href={canonicalURL} />
+{
+  alternates.map((item) => (
+    <link rel='alternate' hreflang={item.lang} href={new URL(item.href, Astro.site)} />
+  ))
+}
 
 {/* Primary Meta Tags */}
 <meta content={siteTitle} name='title' />
@@ -54,7 +66,7 @@ const socialImageURL = new URL(ogImage ? ogImage : config.socialCard, Astro.url)
 <meta content={description} property='og:description' />
 <meta content={canonicalURL} property='og:url' />
 <meta content={config.title} property='og:site_name' />
-<meta content={config.locale.attrs} property='og:locale' />
+<meta content={locale === 'en' ? 'en_US' : config.locale.attrs} property='og:locale' />
 <meta content={socialImageURL} property='og:image' />
 <meta content='1200' property='og:image:width' />
 <meta content='630' property='og:image:height' />
@@ -82,7 +94,7 @@ const socialImageURL = new URL(ogImage ? ogImage : config.socialCard, Astro.url)
   rel='alternate'
   type='application/rss+xml'
   title={config.title}
-  href={`${Astro.site}rss.xml`}
+  href={new URL(localePath('/rss.xml', locale), Astro.site)}
 />
 
 <meta content={Astro.generator} name='generator' />

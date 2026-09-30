@@ -27,6 +27,8 @@ const { class: className } = Astro.props
   import type { WalineEmojiPresets } from '@waline/client'
   import config from 'virtual:config'
 
+  import { getLocale, withoutLocale } from '@/utils/i18n'
+
   const walineConfig = config.integ.waline
 
   class Comment extends HTMLElement {
@@ -48,6 +50,15 @@ const { class: className } = Astro.props
 
     initialize = () => {
       if (!this.isConnected || this.instance) return
+      if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) {
+        const element = this.querySelector('#waline')
+        if (element)
+          element.textContent =
+            getLocale(location.pathname) === 'en'
+              ? 'Comments are disabled in the local preview.'
+              : '本地预览暂不连接评论服务。'
+        return
+      }
       ;(globalThis as unknown as { __VUE_OPTIONS_API__: boolean }).__VUE_OPTIONS_API__ = true
       ;(globalThis as unknown as { __VUE_PROD_DEVTOOLS__: boolean }).__VUE_PROD_DEVTOOLS__ = false
       ;(
@@ -63,7 +74,9 @@ const { class: className } = Astro.props
         serverURL: walineConfig.server || '',
         emoji,
         reaction: ['/icons/heart-item.svg'],
-        ...walineConfig.additionalConfigs
+        ...walineConfig.additionalConfigs,
+        lang: getLocale(location.pathname),
+        path: withoutLocale(location.pathname)
       })
     }
   }

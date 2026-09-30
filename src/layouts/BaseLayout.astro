@@ -4,6 +4,7 @@ import BaseHead from '@/components/BaseHead.astro'
 import Footer from '@/components/site/Footer.astro'
 import Header from '@/components/site/Header.astro'
 import ThemeProvider from '@/components/site/ThemeProvider.astro'
+import { getLocale } from '@/utils/i18n'
 import config from '@/site-config'
 
 // Import the global.css file here so that it is included on
@@ -24,7 +25,7 @@ const {
 } = Astro.props
 ---
 
-<html lang={config.locale.lang}>
+<html lang={getLocale(Astro.url)}>
   <head>
     <BaseHead {articleDate} {description} {ogImage} {title} />
     <ThemeProvider />

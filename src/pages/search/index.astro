@@ -2,6 +2,7 @@
 import { PFSearch } from 'astro-pure/components/pages'
 import { Button } from 'astro-pure/user'
 import PageLayout from '@/layouts/BaseLayout.astro'
+import { getLocale, localePath } from '@/utils/i18n'
 import { integ } from '@/site-config'
 
 const meta = {
@@ -11,7 +12,7 @@ const meta = {
 ---
 
 <PageLayout {meta}>
-  <Button title='Back' href='/blog' variant='back' />
+  <Button title='Back' href={localePath('/blog', getLocale(Astro.url))} variant='back' />
   <main class='mt-6 lg:mt-10'>
     <div id='content-header' class='animate'>
       <h1 class='mb-6 text-3xl font-medium'>Search</h1>

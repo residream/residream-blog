@@ -1,7 +1,8 @@
 ---
 import type { CollectionKey, InferEntrySchema } from 'astro:content'
-
 import config from 'virtual:config'
+
+import { getLocale, localePath } from '@/utils/i18n'
 
 import { cn, getFormattedDate } from '../../utils'
 import { QRCode } from '../advanced'
@@ -57,9 +58,13 @@ const shares = {
         <div class='flex gap-x-2 sm:min-w-16 sm:flex-col'>
           <span>Published at</span>
           <span class='text-sm text-foreground max-sm:place-self-center'>
-            {getFormattedDate(publishDate, {
-              month: 'long'
-            })}
+            {getFormattedDate(
+              publishDate,
+              {
+                month: 'long'
+              },
+              getLocale(Astro.url)
+            )}
           </span>
         </div>
       )
@@ -115,7 +120,7 @@ const shares = {
 
 <div class='mx-6 rounded-b-xl border border-t-0 px-3 pb-1.5 pt-1 sm:mx-8 sm:px-4'>
   <a
-    href='/projects#sponsorship'
+    href={localePath('/projects#sponsorship', getLocale(Astro.url))}
     class='flex items-center justify-between text-muted-foreground no-underline'
     target='_blank'
   >

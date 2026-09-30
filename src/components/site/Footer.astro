@@ -1,7 +1,19 @@
 ---
 import config from 'virtual:config'
 
+import { getLocale, localePath } from '@/utils/i18n'
+
 import { renderFooter } from '../../../packages/site-ui/render'
+
+const locale = getLocale(Astro.url)
+const localizedConfig = {
+  ...config,
+  footer: {
+    ...config.footer,
+    links: config.footer.links?.map((item) => ({ ...item, link: localePath(item.link, locale) })),
+    social: config.footer.social?.map((item) => ({ ...item, href: localePath(item.href, locale) }))
+  }
+}
 ---
 
-<Fragment set:html={renderFooter(config)} />
+<Fragment set:html={renderFooter(localizedConfig)} />

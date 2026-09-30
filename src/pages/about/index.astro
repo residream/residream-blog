@@ -3,6 +3,7 @@ import { Spoiler, Timeline } from 'astro-pure/user'
 import PageLayout from '@/layouts/CommonPage.astro'
 import Substats from '@/components/about/Substats.astro'
 import ToolSection from '@/components/about/ToolSection.astro'
+import { getLocale, uiText } from '@/utils/i18n'
 
 const headings = [
   { depth: 2, slug: 'social-networks', text: 'Social Networks' },
@@ -66,7 +67,16 @@ const headings = [
   {/* education */}
   <h2 id='education'>Education</h2>
   <Timeline
-    events={[{ date: '2025-09', content: '吉林大学，计算机科学与技术学院，网络空间安全，本科' }]}
+    events={[
+      {
+        date: '2025-09',
+        content: uiText(
+          'about.education.timeline',
+          '吉林大学，计算机科学与技术学院，网络空间安全，本科',
+          getLocale(Astro.url)
+        )
+      }
+    ]}
   />
 
   {/* tools */}

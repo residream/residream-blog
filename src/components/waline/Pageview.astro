@@ -2,14 +2,17 @@
   import { pageviewCount } from '@waline/client/pageview'
   import config from 'virtual:config'
 
+  import { withoutLocale } from '@/utils/i18n'
+
   let counted = false
   const loadPageview = () => {
+    if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) return
     const serverURL = config.integ.waline.server
     if (!serverURL || counted || !document.querySelector('.waline-pageview-count')) return
     counted = true
     pageviewCount({
       serverURL,
-      path: window.location.pathname
+      path: withoutLocale(window.location.pathname)
     })
   }
 

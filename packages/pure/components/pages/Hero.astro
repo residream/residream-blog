@@ -2,6 +2,8 @@
 import { Image } from 'astro:assets'
 import type { InferEntrySchema } from 'astro:content'
 
+import { getLocale, localePath } from '@/utils/i18n'
+
 import { FormattedDate, Icon } from '../user'
 
 interface Props {
@@ -90,7 +92,7 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
                 aria-label={`View more blogs with the tag ${tag}`}
                 class='hover:underline hover:underline-offset-4'
                 data-pagefind-filter='tag'
-                href={`/tags/${tag}`}
+                href={localePath(`/tags/${tag}`, getLocale(Astro.url))}
               >
                 {tag}
               </a>

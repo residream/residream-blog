@@ -1,4 +1,6 @@
 ---
+import { getLocale } from '@/utils/i18n'
+
 import { getGithubRepository } from '../../utils/github-repositories'
 import { Icon } from '../user'
 
@@ -9,6 +11,7 @@ interface Props {
 const repo = Astro.props.repo.replace(/^https:\/\/github\.com\//, '').replace(/\/$/, '')
 const [owner, repoName] = repo.split('/')
 const data = await getGithubRepository(repo)
+const description = data?.description === '查看 GitHub 项目' ? undefined : data?.description
 const numberFormat = Intl.NumberFormat('en-us', {
   notation: 'compact',
   maximumFractionDigits: 1
@@ -54,7 +57,10 @@ const numberFormat = Intl.NumberFormat('en-us', {
       </div>
     </div>
     <p data-gh='description' class='text-sm sm:text-base'>
-      {data?.description || '查看 GitHub 项目'}
+      {
+        description ||
+          (getLocale(Astro.url) === 'en' ? 'View the project on GitHub' : '查看 GitHub 项目')
+      }
     </p>
     {
       (

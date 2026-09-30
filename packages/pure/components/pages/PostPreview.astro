@@ -2,6 +2,8 @@
 import { Image } from 'astro:assets'
 import { render, type CollectionEntry, type CollectionKey } from 'astro:content'
 
+import { getLocale, localePath } from '@/utils/i18n'
+
 import { cn } from '../../utils'
 import { Button, FormattedDate, Icon } from '../user'
 
@@ -28,7 +30,7 @@ const previewStyle =
       detailed && 'max-sm:px-4 sm:py-5',
       detailed && data.heroImage && 'max-md:pt-24'
     )}
-    href={`/blog/${id}`}
+    href={localePath(`/blog/${id}`, getLocale(Astro.url))}
     data-astro-prefetch
   >
     {
@@ -106,7 +108,12 @@ const previewStyle =
                 <ul class='tag-list mt-1 flex gap-2'>
                   {data.tags.map((tag: string) => (
                     <li>
-                      <Button as='a' title={tag} href={`/tags/${tag}`} variant='pill' />
+                      <Button
+                        as='a'
+                        title={tag}
+                        href={localePath(`/tags/${tag}`, getLocale(Astro.url))}
+                        variant='pill'
+                      />
                     </li>
                   ))}
                 </ul>

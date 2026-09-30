@@ -14,6 +14,7 @@ import { visit } from 'unist-util-visit'
 import config from 'virtual:config'
 
 import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
+import { blogCollection, getLocale, localePath } from '@/utils/i18n'
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
   '/src/content/blog/**/*.{jpeg,jpg,png,gif,avif,webp,svg,tif,tiff}'
@@ -25,11 +26,12 @@ const escapeXml = (value: string) =>
     (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[char]!
   )
 
-async function renderContent(post: CollectionEntry<'blog'>, site: URL) {
+async function renderContent(post: CollectionEntry<'blog' | 'blogEn'>, site: URL) {
   const sourceDir = path.posix.dirname(
     '/' + (post.filePath || `src/content/blog/${post.id}/index.md`)
   )
-  const articleUrl = new URL(`/blog/${post.id}`, site)
+  const locale = post.collection === 'blogEn' ? 'en' : 'zh-CN'
+  const articleUrl = new URL(localePath(`/blog/${post.id}`, locale), site)
   function absoluteUrls() {
     return async (tree: Root) => {
       const tasks: Promise<void>[] = []
@@ -70,7 +72,8 @@ async function renderContent(post: CollectionEntry<'blog'>, site: URL) {
 }
 
 export const GET: APIRoute = async (context) => {
-  const posts = sortMDByDate(await getBlogCollection()) as CollectionEntry<'blog'>[]
+  const locale = getLocale(context.url)
+  const posts = sortMDByDate(await getBlogCollection(blogCollection(locale)))
   const site = context.site ?? new URL(import.meta.env.SITE)
   return rss({
     trailingSlash: false,
@@ -79,6 +82,7 @@ export const GET: APIRoute = async (context) => {
     title: config.title,
     description: config.description,
     site,
+    customData: `<language>${locale}</language>`,
     items: await Promise.all(
       posts.map(async (post) => {
         const hero = post.data.heroImage?.src
@@ -87,7 +91,7 @@ export const GET: APIRoute = async (context) => {
         return {
           ...post.data,
           pubDate: post.data.publishDate,
-          link: `/blog/${post.id}`,
+          link: localePath(`/blog/${post.id}`, locale),
           customData: [
             heroPath ? `<h:img src="${escapeXml(new URL(heroPath, site).href)}" />` : '',
             post.data.updatedDate

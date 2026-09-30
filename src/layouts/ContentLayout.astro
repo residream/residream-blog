@@ -4,6 +4,7 @@ import type { SiteMeta } from 'astro-pure/types'
 import { Button, Icon } from 'astro-pure/user'
 import { cn } from 'astro-pure/utils'
 import PageLayout from '@/layouts/BaseLayout.astro'
+import { getLocale, localePath } from '@/utils/i18n'
 import { integ } from '@/site-config'
 
 interface Props {
@@ -16,7 +17,7 @@ const { meta, highlightColor, back = '/', ...props } = Astro.props
 ---
 
 <PageLayout {meta} {highlightColor} {...props}>
-  <Button title='Back' href={back} variant='back' />
+  <Button title='Back' href={localePath(back ?? '/', getLocale(Astro.url))} variant='back' />
   <main class='mt-6 items-start gap-x-10 md:flex'>
     {/* Sidebar */}
     <aside
