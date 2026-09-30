@@ -9,7 +9,7 @@ heroImage:
   src: ./beer.jpg
   color: "#181818"
   alt: L3akCTF 2026 部分 web 题 writeup
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

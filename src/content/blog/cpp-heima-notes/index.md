@@ -8,7 +8,7 @@ heroImage:
   src: ./acoustic-session.jpg
   color: "#A0957D"
   alt: C++ 入门黑马程序员学习记录
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

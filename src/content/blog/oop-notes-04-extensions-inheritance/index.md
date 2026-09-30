@@ -8,7 +8,7 @@ heroImage:
   src: ./take-me-home.jpg
   color: "#A78B77"
   alt: OOP复(yù)习(xí)笔记（四）：类的扩展机制与继承体系
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

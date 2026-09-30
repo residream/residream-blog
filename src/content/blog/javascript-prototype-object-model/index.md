@@ -8,7 +8,7 @@ heroImage:
   src: ./cycling.jpg
   color: "#82829C"
   alt: JavaScript学习：基于原型的对象模型
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

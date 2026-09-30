@@ -8,7 +8,7 @@ heroImage:
   src: ./rainy-day-2.jpg
   color: "#7E899F"
   alt: OOP复(yù)习(xí)笔记（一）：C++ 语言基础
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

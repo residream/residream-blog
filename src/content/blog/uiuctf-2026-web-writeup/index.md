@@ -9,7 +9,7 @@ heroImage:
   src: ./rum-raisin-pancake.jpg
   color: "#7D89A1"
   alt: UIUCTF 2026 web 题 writeup
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

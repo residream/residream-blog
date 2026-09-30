@@ -8,7 +8,7 @@ heroImage:
   src: ./rain-in-the-sky.jpg
   color: "#282838"
   alt: 博客翻新日志：从 WordPress 迁移到 Astro
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

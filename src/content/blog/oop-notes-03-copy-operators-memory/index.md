@@ -8,7 +8,7 @@ heroImage:
   src: ./a-new-day.jpg
   color: "#AA70AE"
   alt: OOP复(yù)习(xí)笔记（三）：对象拷贝、运算符与动态内存
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

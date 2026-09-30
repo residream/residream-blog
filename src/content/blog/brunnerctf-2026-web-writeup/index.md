@@ -9,7 +9,7 @@ heroImage:
   src: ./exploring-the-library.jpg
   color: "#383838"
   alt: BrunnerCTF 2026 部分 web 题 writeup
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

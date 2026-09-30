@@ -9,7 +9,7 @@ heroImage:
   src: ./lull.jpg
   color: "#6178BC"
   alt: gaslightCTF 2026 web 题 writeup
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

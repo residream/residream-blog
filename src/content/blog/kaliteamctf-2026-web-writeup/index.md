@@ -9,7 +9,7 @@ heroImage:
   src: ./walking-with-a-cat.jpg
   color: "#81766E"
   alt: KaliTeamCTF 2026 部分 web 题 writeup
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

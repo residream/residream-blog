@@ -8,7 +8,7 @@ heroImage:
   src: ./cytokine-nitro.jpg
   color: "#7E849F"
   alt: Python学习：从元类到ORM框架
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

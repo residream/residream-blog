@@ -9,7 +9,7 @@ heroImage:
   src: ./rooftop-amusement-park.jpg
   color: "#9F7E9B"
   alt: ctfshow SSRF
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

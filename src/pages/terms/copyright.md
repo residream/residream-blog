@@ -3,7 +3,7 @@ layout: '@/layouts/IndividualPage.astro'
 
 title: 'Copyright'
 description: '最后更新：2026-09-22'
-language: 'Zh'
+language: 'zh-CN'
 back: '/terms'
 ---
 

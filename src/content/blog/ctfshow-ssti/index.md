@@ -9,7 +9,7 @@ heroImage:
   src: ./sea-breeze.jpg
   color: "#5D6D7E"
   alt: ctfshow SSTI
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

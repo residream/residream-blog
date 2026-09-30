@@ -369,6 +369,11 @@ export async function preparePost({
   doc.set('description', description)
   doc.set('publishDate', publishDate)
   doc.set('draft', false)
+  if (typeof data.language === 'string') {
+    const language = data.language.trim()
+    if (/^(?:简中|zh(?:-cn)?)$/i.test(language)) doc.set('language', 'zh-CN')
+    else if (/^en$/i.test(language)) doc.set('language', 'en')
+  }
   // Astro uses frontmatter.slug as the public ID; a CLI override must update it too.
   if (doc.has('slug')) doc.set('slug', slug)
   if (data.updatedDate != null)

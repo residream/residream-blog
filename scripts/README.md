@@ -20,7 +20,7 @@ publishDate: 'xxxxxx'
 tags:
   - 'astro'
 heroImage: { src: './rain-in-the-sky.jpg', color: '#xxxxxx' }
-language: '简中'
+language: 'zh-CN'
 draft: true
 ---
 
@@ -32,6 +32,7 @@ draft: true
 - 自动找到 `rain-in-the-sky.jpg`，复制到文章目录，并从图片提取主色。`heroImage` 也支持多行写法或直接写图片路径。
 - 日期、颜色缺省、为空、写 `auto` 或全为 `x` 的占位符时自动补齐。合法的手动日期和十六进制颜色会保留；其他无效值会报错。
 - 新文章使用导入时的时间；更新文章时保留原发布时间。`draft` 自动改为 `false`。
+- `language` 使用 `zh-CN`（简体中文）或 `en`（英文）。旧稿中的 `简中`、`Zh`、`zh`、`zh-cn` 会在导入时统一为 `zh-CN`。
 - 目录名先用 `--slug` 或 Markdown 的 `slug`，否则复用同标题文章的目录，再根据标题/文件名生成。纯中文名称会生成稳定的短编号，不需要临时填写。
 - 不写头图时，使用正文第一张本地图片；完全没有本地图片时使用站点默认色。写 `heroImage: false` 可以不设头图。
 - 没有 frontmatter 的普通 Markdown 也能导入：用一级标题或文件名作标题，从第一段提取描述。标题最多 60 字，描述最多 160 字。

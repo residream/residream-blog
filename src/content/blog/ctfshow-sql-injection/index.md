@@ -9,7 +9,7 @@ heroImage:
   src: ./machine-life.jpg
   color: "#282828"
   alt: ctfshow sql注入
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

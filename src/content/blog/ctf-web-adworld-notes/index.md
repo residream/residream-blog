@@ -9,7 +9,7 @@ heroImage:
   src: ./breath.jpg
   color: "#181818"
   alt: CTF web 入门攻防世界刷题集合
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

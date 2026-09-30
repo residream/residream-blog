@@ -8,7 +8,7 @@ heroImage:
   src: ./water-mirror.jpg
   color: "#496C98"
   alt: OOP复(yù)习(xí)笔记（五）：虚机制、多态与高级特性
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

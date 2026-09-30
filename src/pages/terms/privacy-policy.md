@@ -3,7 +3,7 @@ layout: '@/layouts/IndividualPage.astro'
 
 title: 'Privacy Policy'
 description: '最后更新：2026-09-27'
-language: 'Zh'
+language: 'zh-CN'
 back: '/terms'
 ---
 

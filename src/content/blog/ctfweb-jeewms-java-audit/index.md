@@ -9,7 +9,7 @@ heroImage:
   src: ./domino-girl.jpg
   color: "#637EA2"
   alt: CTFWEB 199.193.127.177:8081
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

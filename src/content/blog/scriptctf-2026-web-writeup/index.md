@@ -9,7 +9,7 @@ heroImage:
   src: ./little-desire.jpg
   color: "#6587AA"
   alt: ScriptCTF 2026 web 题 writeup
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

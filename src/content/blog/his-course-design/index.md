@@ -8,7 +8,7 @@ heroImage:
   src: ./location-unknown.jpg
   color: "#6A9796"
   alt: C语言课设——医疗管理系统
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

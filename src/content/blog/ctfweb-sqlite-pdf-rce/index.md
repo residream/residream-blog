@@ -9,7 +9,7 @@ heroImage:
   src: ./woke-up-at-night.jpg
   color: "#9A8983"
   alt: CTFWEB 199.193.127.177:9000
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 

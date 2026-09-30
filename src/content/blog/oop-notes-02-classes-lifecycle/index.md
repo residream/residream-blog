@@ -8,7 +8,7 @@ heroImage:
   src: ./pain.jpg
   color: "#66A4B7"
   alt: OOP复(yù)习(xí)笔记（二）：类、对象与生命周期
-language: '简中'
+language: 'zh-CN'
 draft: false
 ---
 
