@@ -1,5 +1,36 @@
 ;(() => {
   if (customElements.get('rd-header')) return
+  // The new theme spreads in a circle from the toggle where view transitions are available
+  function switchTheme(origin) {
+    const apply = () => {
+      const preference = window.ResidreamUI.next()
+      document.dispatchEvent(
+        new CustomEvent('toast', { detail: { message: `Set theme to ${preference}` } })
+      )
+    }
+    if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches)
+      return apply()
+    const { left, top, width, height } = origin.getBoundingClientRect()
+    const x = left + width / 2
+    const y = top + height / 2
+    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
+    // For this transition only: no cross-fade, and the header is revealed with the page
+    const style = document.createElement('style')
+    style.textContent =
+      '::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}' +
+      'rd-header{view-transition-name:none!important}'
+    document.head.append(style)
+    const transition = document.startViewTransition(apply)
+    transition.ready
+      .then(() =>
+        document.documentElement.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+          { duration: 350, easing: 'ease-out', pseudoElement: '::view-transition-new(root)' }
+        )
+      )
+      .catch(() => {})
+    transition.finished.catch(() => {}).then(() => style.remove())
+  }
   class SiteHeader extends HTMLElement {
     connectedCallback() {
       window.ResidreamUI?.setTheme()
@@ -17,12 +48,9 @@
         'click',
         (event) => {
           const target = event.target instanceof Element ? event.target : null
-          if (target?.closest('[data-rd-theme-toggle]')) {
-            const preference = window.ResidreamUI.next()
-            document.dispatchEvent(
-              new CustomEvent('toast', { detail: { message: `Set theme to ${preference}` } })
-            )
-          } else if (target?.closest('[data-rd-menu-toggle]'))
+          const themeToggle = target?.closest('[data-rd-theme-toggle]')
+          if (themeToggle) switchTheme(themeToggle)
+          else if (target?.closest('[data-rd-menu-toggle]'))
             menu(!this.classList.contains('expanded'))
           else if (target?.closest('a')) menu(false)
         },
