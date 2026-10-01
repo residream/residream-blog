@@ -6,8 +6,10 @@ import { prod } from 'astro-pure/server'
 import type { SiteMeta } from 'astro-pure/types'
 import Counterscale from '@/components/Counterscale.astro'
 import LanguageNavigation from '@/components/site/LanguageNavigation.astro'
+import ViewTransitions from '@/components/site/ViewTransitions.astro'
 import { getLocale, localePath } from '@/utils/i18n'
 import { languageLinks } from '@/utils/locale-routes'
+import { motion } from '@/site-config'
 
 type Props = SiteMeta
 
@@ -27,6 +29,7 @@ const { alternates } = await languageLinks(Astro.url)
 />
 <meta content='IE=edge' http-equiv='X-UA-Compatible' />
 <LanguageNavigation />
+{motion.viewTransitions && <ViewTransitions />}
 <title>{siteTitle}</title>
 
 {/* Icons / Favicon */}

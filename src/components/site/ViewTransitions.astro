@@ -1,0 +1,28 @@
+{/* Rendered only when `motion.viewTransitions` is on in site.config.ts */}
+
+<script is:inline>
+  // Runs before the first frame, so a page arriving through a transition skips the entrance animation
+  addEventListener('pagereveal', (event) => {
+    if (event.viewTransition) document.documentElement.setAttribute('data-view-transition', '')
+  })
+</script>
+
+<style is:inline>
+  @media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+      navigation: auto;
+    }
+  }
+  rd-header {
+    view-transition-name: site-header;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.2s;
+  }
+  html[data-view-transition] .animate {
+    animation: none;
+    opacity: 1;
+  }
+</style>
