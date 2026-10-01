@@ -5,6 +5,7 @@ import config from 'virtual:config'
 import { prod } from 'astro-pure/server'
 import type { SiteMeta } from 'astro-pure/types'
 import Counterscale from '@/components/Counterscale.astro'
+import LanguageNavigation from '@/components/site/LanguageNavigation.astro'
 import { getLocale, localePath } from '@/utils/i18n'
 import { languageLinks } from '@/utils/locale-routes'
 
@@ -25,6 +26,7 @@ const { alternates } = await languageLinks(Astro.url)
   name='viewport'
 />
 <meta content='IE=edge' http-equiv='X-UA-Compatible' />
+<LanguageNavigation />
 <title>{siteTitle}</title>
 
 {/* Icons / Favicon */}

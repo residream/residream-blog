@@ -8,12 +8,13 @@ const { content, class: className, ...props } = Astro.props
 
 <script is:inline src={`${config.npmCDN}/qrcodejs/qrcode.min.js`}></script>
 <script is:inline define:vars={{ content }}>
-  const renderContent = content ?? window.location.href
   // Load qrcode
   function loadQRcode(qrcodeContainer) {
     if (!qrcodeContainer) throw new Error('qrcode container not found')
     if (qrcodeContainer.innerHTML !== '') return
-    new QRCode(qrcodeContainer, renderContent)
+    const code = new window.QRCode(qrcodeContainer, content ?? window.location.href)
+    if (!content)
+      document.addEventListener('rd:language-change', () => code.makeCode(window.location.href))
   }
   const qrcodeContainer = document.getElementById('qrcode-container')
   if (!qrcodeContainer) throw new Error('qrcode container not found')

@@ -35,6 +35,7 @@ const { class: className } = Astro.props
     instance: ReturnType<typeof walineInit> = null
 
     connectedCallback() {
+      document.addEventListener('rd:language-change', this.updateLocale)
       if ((document as Document & { prerendering?: boolean }).prerendering) {
         document.addEventListener('prerenderingchange', this.initialize, { once: true })
       } else {
@@ -43,9 +44,19 @@ const { class: className } = Astro.props
     }
 
     disconnectedCallback() {
+      document.removeEventListener('rd:language-change', this.updateLocale)
       document.removeEventListener('prerenderingchange', this.initialize)
       this.instance?.destroy()
       this.instance = null
+    }
+
+    updateLocale = () => {
+      if (this.instance) {
+        this.instance.update({
+          lang: getLocale(location.pathname),
+          path: withoutLocale(location.pathname)
+        })
+      } else this.initialize()
     }
 
     initialize = () => {

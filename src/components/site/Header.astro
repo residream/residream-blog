@@ -39,6 +39,9 @@ const localizedConfig = {
     opacity: 0.45;
     cursor: help;
   }
+  [data-language-switch][aria-busy='true'] {
+    cursor: progress;
+  }
   [data-language-switch] path {
     transition: transform 180ms ease;
   }
@@ -68,19 +71,11 @@ const localizedConfig = {
 
 <script>
   const toggle = document.querySelector<HTMLAnchorElement>('[data-language-switch]')
-  toggle?.addEventListener('click', (event) => {
+  toggle?.addEventListener('click', () => {
     if (!toggle.href) {
       document.dispatchEvent(new CustomEvent('toast', { detail: { message: toggle.title } }))
       return
     }
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
-      return
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    event.preventDefault()
-    if (toggle.dataset.switching) return
-    toggle.dataset.switching = 'true'
-    toggle.dataset.locale = toggle.dataset.locale === 'en' ? 'zh-CN' : 'en'
-    window.setTimeout(() => window.location.assign(toggle.href), 180)
   })
   toggle?.addEventListener('keydown', (event) => {
     if (!toggle.href && (event.key === 'Enter' || event.key === ' ')) {
@@ -91,6 +86,5 @@ const localizedConfig = {
   window.addEventListener('pageshow', () => {
     if (!toggle) return
     toggle.dataset.locale = document.documentElement.lang
-    delete toggle.dataset.switching
   })
 </script>

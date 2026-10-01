@@ -3,6 +3,38 @@ import * as pagefind from '../../pagefind/pagefind.js'
 export * from '../../pagefind/pagefind.js'
 
 let documents
+let disposal = Promise.resolve()
+let generation = 0
+const pending = new Set()
+
+function track(promise) {
+  pending.add(promise)
+  const cleanup = () => pending.delete(promise)
+  promise.then(cleanup, cleanup)
+  return promise
+}
+
+// Pagefind UI tears down asynchronously; a new locale must wait for the old index.
+export function destroy() {
+  generation++
+  documents = undefined
+  const finishing = [...pending]
+  disposal = disposal.then(async () => {
+    await Promise.allSettled(finishing)
+    await pagefind.destroy()
+  })
+  return disposal
+}
+
+export async function options(value) {
+  await disposal
+  return track(pagefind.options(value))
+}
+
+export async function filters() {
+  await disposal
+  return track(pagefind.filters())
+}
 
 const escapeHtml = (text) =>
   text.replace(
@@ -74,7 +106,7 @@ function literalResult({ entry, data }, terms) {
 
 // Pagefind's index and the browser can disagree on Chinese word boundaries.
 // Reuse its compressed fragments for literal matches, loaded only for Chinese queries.
-export async function search(term, options = {}) {
+async function searchCurrent(term, options = {}) {
   const original = await pagefind.search(term, options)
   if (!term || !/\p{Script=Han}/u.test(term)) return original
   try {
@@ -120,5 +152,34 @@ export async function search(term, options = {}) {
   } catch (error) {
     console.warn('Chinese search fallback unavailable:', error)
     return original
+  }
+}
+
+export async function search(term, options = {}) {
+  await disposal
+  const current = generation
+  const result = await track(searchCurrent(term, options))
+  if (current !== generation)
+    return { results: [], unfilteredResultCount: 0, filters: {}, totalFilters: {} }
+  return {
+    ...result,
+    results: result.results.map((entry) => ({
+      ...entry,
+      data: () => {
+        // A destroyed UI may finish rendering an old result after the locale changes.
+        if (current !== generation)
+          return Promise.resolve({
+            url: '#',
+            meta: { title: '' },
+            content: '',
+            excerpt: '',
+            sub_results: [],
+            anchors: [],
+            filters: {},
+            word_count: 0
+          })
+        return track(entry.data())
+      }
+    }))
   }
 }

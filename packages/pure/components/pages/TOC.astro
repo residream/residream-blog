@@ -42,10 +42,17 @@ const toc = generateToc(headings)
     headings: HTMLElement[] = []
     tocLinks: TOCLink[] = []
     headingProgress: Record<string, HeadingProgress> = {}
+    controller?: AbortController
+    interval?: number
 
-    constructor() {
-      super()
+    refresh = () => {
+      this.disconnectedCallback()
+      this.connectedCallback()
+    }
+
+    initializeElements() {
       // Initialize the headings and tocLinks
+      this.headingProgress = {}
       this.headings = Array.from(
         document.querySelectorAll(
           'article h1, article h2, article h3, article h4, article h5, article h6'
@@ -77,8 +84,8 @@ const toc = generateToc(headings)
       })
 
       this.tocLinks.forEach(({ element: el, progressBar: bar, slug }, i) => {
-        const { inView, progress } = this.headingProgress[slug]
         if (this.headingProgress[slug]) {
+          const { inView, progress } = this.headingProgress[slug]
           el.classList.toggle('highlight', inView)
           el.classList.toggle('highlight-bg-translucent', inView)
           el.classList.toggle(
@@ -99,29 +106,45 @@ const toc = generateToc(headings)
     }
 
     connectedCallback() {
+      this.controller?.abort()
+      window.clearInterval(this.interval)
+      this.controller = new AbortController()
+      const { signal } = this.controller
+      this.initializeElements()
       // Smooth scroll
       this.tocLinks.forEach((link) => {
-        link.element.addEventListener('click', (e) => {
-          e.preventDefault()
-          // Push the history to add the hash at the end of the URL
-          const directHeading = this.headings.find((heading) => heading.id === link.slug)
-          if (directHeading) {
+        link.element.addEventListener(
+          'click',
+          (e) => {
+            e.preventDefault()
             // Push the history to add the hash at the end of the URL
-            history.pushState(
-              null,
-              directHeading.textContent || '',
-              link.element.getAttribute('href')
-            )
-            directHeading.scrollIntoView({ behavior: 'smooth' })
-          } else {
-            console.warn(`No heading found for slug: ${link.slug}`)
-          }
-        })
+            const directHeading = this.headings.find((heading) => heading.id === link.slug)
+            if (directHeading) {
+              // Push the history to add the hash at the end of the URL
+              history.pushState(
+                null,
+                directHeading.textContent || '',
+                link.element.getAttribute('href')
+              )
+              directHeading.scrollIntoView({ behavior: 'smooth' })
+            } else {
+              console.warn(`No heading found for slug: ${link.slug}`)
+            }
+          },
+          { signal }
+        )
       })
 
       // Initial first and listen to scroll event
-      setInterval(this.updatePositionAndStyle, 100)
-      window.addEventListener('scroll', this.updatePositionAndStyle)
+      this.interval = window.setInterval(this.updatePositionAndStyle, 100)
+      window.addEventListener('scroll', this.updatePositionAndStyle, { signal })
+      document.addEventListener('rd:language-change', this.refresh, { signal })
+      this.updatePositionAndStyle()
+    }
+
+    disconnectedCallback() {
+      this.controller?.abort()
+      window.clearInterval(this.interval)
     }
   }
 

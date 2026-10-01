@@ -100,6 +100,10 @@ const { meta, highlightColor, back = '/', ...props } = Astro.props
   sidebarButton?.addEventListener('click', () => {
     toggleSidebar()
   })
+  document.addEventListener('rd:before-language-change', () => {
+    sidebar?.classList.remove('show')
+    if (sidebarShade) sidebarShade.style.display = 'none'
+  })
 </script>
 <style>
   @media (min-width: 768px) {

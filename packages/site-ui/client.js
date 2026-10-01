@@ -47,11 +47,21 @@
       )
       const scroll = () => {
         const current = window.scrollY
+        if (current === previous) return
         this.classList.toggle('not-top', current > 20)
         this.dataset.show = String(current < 350 || current < previous)
         previous = current
       }
       window.addEventListener('scroll', scroll, { ...options, passive: true })
+      window.addEventListener(
+        'rd:scroll-restored',
+        () => {
+          previous = window.scrollY
+          this.classList.toggle('not-top', previous > 20)
+          this.dataset.show = 'true'
+        },
+        options
+      )
       window.addEventListener(
         'resize',
         () => {

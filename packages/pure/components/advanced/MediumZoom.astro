@@ -13,7 +13,11 @@ const { selector = config.integ.mediumZoom.selector, background = 'hsl(var(--bac
 
 <script is:inline src={`${config.npmCDN}/medium-zoom/dist/pure/medium-zoom.min.umd.js`}></script>
 <script is:inline define:vars={{ selector, background }}>
-  mediumZoom(selector, { background })
+  const zoom = mediumZoom(selector, { background })
+  document.addEventListener('rd:language-change', () => {
+    zoom.detach(...zoom.getImages().filter((image) => !image.isConnected))
+    zoom.attach(selector)
+  })
 </script>
 <style is:global>
   .medium-zoom-overlay {
