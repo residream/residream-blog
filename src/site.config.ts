@@ -171,7 +171,9 @@ export const integ: IntegrationUserConfig = {
 /** Motion features; browsers without support keep plain navigation. */
 export const motion = {
   /** Cross-fade between pages with the browser's view transitions, keeping the header in place */
-  viewTransitions: true
+  viewTransitions: true,
+  /** A thin bar at the top of posts that follows reading progress through the article body */
+  readingProgress: true
 }
 
 export const terms: CardListData = {
