@@ -70,7 +70,7 @@ In the end, I turned `clientPrerender` off and kept only regular prefetching, wh
 
 ## Faster loading
 
-I'd been busy adding features, so this time Astra and I went back to look at performance. Article pages loaded two scripts from jsDelivr — the QR code and image zoom — that blocked page parsing: until they finished downloading, the header menu, theme toggle, table of contents, and comments all just had to wait. jsDelivr is hit-and-miss from mainland China, so on a slow day a page could look fully loaded yet not respond to clicks.
+I'd been busy adding features, so this time Opus and I went back to look at performance. Article pages loaded two scripts from jsDelivr — the QR code and image zoom — that blocked page parsing: until they finished downloading, the header menu, theme toggle, table of contents, and comments all just had to wait. jsDelivr is hit-and-miss from mainland China, so on a slow day a page could look fully loaded yet not respond to clicks.
 
 Both are now bundled with the site. Image zoom still uses medium-zoom, while the QR code switched to the smaller uqr and is only generated once you scroll near the end of a post. The Waline emoji packs are served from this site as well, so the blog no longer loads anything from jsDelivr.
 
