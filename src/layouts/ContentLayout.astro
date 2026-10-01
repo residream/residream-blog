@@ -67,6 +67,8 @@ const { meta, highlightColor, back = '/', ...props } = Astro.props
     <button
       slot='other-icons'
       aria-label='Toggle sidebar'
+      aria-controls='sidebar'
+      aria-expanded='false'
       class='size-10 flex items-center justify-center rounded-full border-2 border-transparent bg-muted text-muted-foreground duration-300 hover:border-border/75 md:hidden sm:size-12'
       id='sidebar-btn'
     >
@@ -76,34 +78,61 @@ const { meta, highlightColor, back = '/', ...props } = Astro.props
 </PageLayout>
 
 <script>
-  // Toggle sidebar visibility on button click
+  // Sidebar drawer on small screens
   const sidebarButton = document.getElementById('sidebar-btn')
   const sidebar = document.getElementById('sidebar')
-  const sidebarShade = document.getElementById('sidebar-shade') as HTMLElement
+  const sidebarShade = document.getElementById('sidebar-shade')
+  // Bumped on every open or close so a pending close cannot hide a reopened drawer
+  let generation = 0
 
-  if (sidebarShade) {
-    sidebarShade.addEventListener('click', () => {
-      toggleSidebar()
-    })
+  function openSidebar() {
+    if (!sidebar || !sidebarShade) return
+    generation++
+    sidebar.classList.remove('closing')
+    sidebarShade.classList.remove('closing')
+    sidebar.classList.add('show')
+    sidebarShade.style.display = 'block'
+    sidebarButton?.setAttribute('aria-expanded', 'true')
   }
 
-  function toggleSidebar() {
-    if (sidebar && sidebar.classList.contains('show')) {
-      sidebar.classList.remove('show')
+  function closeSidebar(animate = true) {
+    if (!sidebar || !sidebarShade || !sidebar.classList.contains('show')) return
+    const current = ++generation
+    sidebarButton?.setAttribute('aria-expanded', 'false')
+    const finish = () => {
+      if (current !== generation) return
+      sidebar.classList.remove('show', 'closing')
+      sidebarShade.classList.remove('closing')
       sidebarShade.style.display = 'none'
-    } else if (sidebar) {
-      sidebar.classList.add('show')
-      sidebarShade.style.display = 'block'
     }
+    if (!animate || matchMedia('(prefers-reduced-motion: reduce)').matches) return finish()
+    sidebar.classList.add('closing')
+    sidebarShade.classList.add('closing')
+    sidebar.addEventListener('animationend', function ended(event) {
+      if (event.target !== sidebar) return
+      sidebar.removeEventListener('animationend', ended)
+      finish()
+    })
+    // In case the animation never runs, e.g. after resizing past the breakpoint
+    setTimeout(finish, 400)
   }
 
   sidebarButton?.addEventListener('click', () => {
-    toggleSidebar()
+    if (sidebar?.classList.contains('show') && !sidebar.classList.contains('closing'))
+      closeSidebar()
+    else openSidebar()
   })
-  document.addEventListener('rd:before-language-change', () => {
-    sidebar?.classList.remove('show')
-    if (sidebarShade) sidebarShade.style.display = 'none'
+  sidebarShade?.addEventListener('click', () => closeSidebar())
+  // Jumping to a section should reveal it rather than leave the drawer over it
+  sidebar?.addEventListener('click', (event) => {
+    if (event.target instanceof Element && event.target.closest('a[href^="#"]')) closeSidebar()
   })
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !sidebar?.classList.contains('show')) return
+    closeSidebar()
+    sidebarButton?.focus()
+  })
+  document.addEventListener('rd:before-language-change', () => closeSidebar(false))
 </script>
 <style>
   @media (min-width: 768px) {
@@ -135,6 +164,24 @@ const { meta, highlightColor, back = '/', ...props } = Astro.props
         opacity: 1;
       }
     }
+    @keyframes fade-out-side {
+      0% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(50%);
+        opacity: 0;
+      }
+    }
+    @keyframes fade-out {
+      0% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
     aside {
       animation: 300ms fade-in-side !important;
       animation-fill-mode: forwards;
@@ -147,9 +194,25 @@ const { meta, highlightColor, back = '/', ...props } = Astro.props
       border-bottom-right-radius: 0 !important;
       padding-top: 1.5rem !important;
       padding-bottom: 1.5rem !important;
+      /* Reaching the end of the list should not scroll the page behind it */
+      overscroll-behavior: contain;
+    }
+    aside.closing {
+      animation: 200ms ease-in fade-out-side forwards !important;
     }
     #sidebar-shade {
       animation: 300ms fade-in;
+      /* Dragging on the shade should not scroll the page behind it */
+      touch-action: none;
+    }
+    #sidebar-shade.closing {
+      animation: 200ms ease-in fade-out forwards;
+    }
+  }
+  @media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+    aside,
+    #sidebar-shade {
+      animation: none !important;
     }
   }
   @media (max-width: 639px) {
