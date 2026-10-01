@@ -21,7 +21,9 @@ export const IntegrationConfigSchema = () =>
       /** The server to fetch the quote from. */
       server: z.string(),
       /** target: string, but (data: unknown) => string */
-      target: z.string()
+      target: z.string(),
+      /** Sources for pages in other languages, keyed by the `lang` of <html>, e.g. `en`. */
+      locales: z.record(z.string(), z.object({ server: z.string(), target: z.string() })).optional()
     }),
 
     /** UnoCSS typography */

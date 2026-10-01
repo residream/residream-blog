@@ -121,10 +121,23 @@ export const integ: IntegrationUserConfig = {
   // Add a random quote to the footer (default on homepage footer)
   // See: https://astro-pure.js.org/docs/integrations/advanced#web-content-render
   // [Quote]
+  // A failed or slow source shows the site description instead
   quote: {
     // https://developer.hitokoto.cn/sentence/#%E8%AF%B7%E6%B1%82%E5%9C%B0%E5%9D%80
     server: 'https://v1.hitokoto.cn/?c=i&c=k',
-    target: `(data) => data.hitokoto || 'Error'`
+    target: `(data) => data.hitokoto`,
+    locales: {
+      // English pages, as on CWorld: https://dummyjson.com/docs/quotes
+      // Takes the first of ten that fits on one line and is not Title Cased throughout
+      en: {
+        server: 'https://dummyjson.com/quotes/random/10',
+        target: `(data) => data.find(({ quote }) => {
+          const words = quote.match(/[A-Za-z']{4,}/g) || []
+          const capitals = words.filter((word) => /^[A-Z]/.test(word)).length
+          return quote.length <= 80 && capitals <= words.length * 0.6
+        })?.quote`
+      }
+    }
   },
   // [Typography]
   // https://unocss.dev/presets/typography

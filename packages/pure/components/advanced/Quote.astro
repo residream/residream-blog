@@ -22,22 +22,44 @@ const { class: className, sentence } = Astro.props
   const { quote } = config.integ
 
   class Quote extends HTMLElement {
+    // Bumped per request, so a slow answer cannot replace a newer one
+    request = 0
+
     render(sentence: string) {
       const quoteEl = this.querySelector('#quote-sentence') as HTMLElement
       if (!quoteEl) return
       quoteEl.innerText = sentence
     }
 
-    connectedCallback() {
+    load = async () => {
       if (this.dataset.sentence) {
         this.render(this.dataset.sentence)
         return
       }
-      // Because virtual:config can only be accessed using json string, function cannot work, so we need to use new Function
-      const targetFunction = new Function('data', `return (${quote.target})(data)`)
-      fetch(quote.server)
-        .then((response) => response.json())
-        .then((data) => this.render(targetFunction(data)))
+      const request = ++this.request
+      // Pages in another language can have their own source, keyed by <html lang>
+      const source = quote.locales?.[document.documentElement.lang] ?? quote
+      let sentence: unknown
+      try {
+        const response = await fetch(source.server, { signal: AbortSignal.timeout(3000) })
+        // Because virtual:config can only be accessed using json string, function cannot work, so we need to use new Function
+        const targetFunction = new Function('data', `return (${source.target})(data)`)
+        sentence = targetFunction(await response.json())
+      } catch {
+        // Falls back to the site description below
+      }
+      if (request !== this.request) return
+      this.render(typeof sentence === 'string' && sentence ? sentence : config.description)
+    }
+
+    connectedCallback() {
+      // The language switch keeps this element, so it fetches a quote in the new language itself
+      document.addEventListener('rd:language-change', this.load)
+      void this.load()
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener('rd:language-change', this.load)
     }
   }
   customElements.define('quote-component', Quote)
