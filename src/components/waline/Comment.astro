@@ -135,8 +135,10 @@ const { class: className } = Astro.props
       try {
         const { init } = await import('@waline/client')
         if (!this.isConnected || this.instance) return
+        // Served from public/emojis. Absolute, because Waline stores the image addresses in each
+        // comment, which its admin pages and notification emails show outside this site
         const emoji = walineConfig.emoji?.map(
-          (preset) => `${config.npmCDN}/@waline/emojis@1.2.0/${preset}` as WalineEmojiPresets
+          (preset) => new URL(`/emojis/${preset}`, location.origin).href as WalineEmojiPresets
         )
         this.instance = init({
           el: 'comment-component #waline',

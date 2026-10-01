@@ -153,6 +153,7 @@ export const integ: IntegrationUserConfig = {
     // Show meta info for comments
     showMeta: false,
     // Refer https://waline.js.org/en/guide/features/emoji.html
+    // Presets are served from public/emojis/; see the README there to add one
     emoji: ['bmoji', 'weibo'],
     // Refer https://waline.js.org/en/reference/client/props.html
     additionalConfigs: {
