@@ -11,13 +11,27 @@ const { selector = config.integ.mediumZoom.selector, background = 'hsl(var(--bac
   Astro.props
 ---
 
-<script is:inline src={`${config.npmCDN}/medium-zoom/dist/pure/medium-zoom.min.umd.js`}></script>
-<script is:inline define:vars={{ selector, background }}>
-  const zoom = mediumZoom(selector, { background })
-  document.addEventListener('rd:language-change', () => {
-    zoom.detach(...zoom.getImages().filter((image) => !image.isConnected))
-    zoom.attach(selector)
-  })
+<medium-zoom data-selector={selector} data-background={background} hidden></medium-zoom>
+
+<script>
+  // Bundled with the site, so a slow CDN cannot hold up parsing of the page
+  import mediumZoom from 'medium-zoom/dist/pure'
+
+  class MediumZoom extends HTMLElement {
+    zoom?: ReturnType<typeof mediumZoom>
+
+    connectedCallback() {
+      if (this.zoom) return
+      const { selector = '', background } = this.dataset
+      const zoom = mediumZoom(selector, { background })
+      this.zoom = zoom
+      document.addEventListener('rd:language-change', () => {
+        zoom.detach(...zoom.getImages().filter((image) => !image.isConnected))
+        zoom.attach(selector)
+      })
+    }
+  }
+  customElements.define('medium-zoom', MediumZoom)
 </script>
 <style is:global>
   .medium-zoom-overlay {

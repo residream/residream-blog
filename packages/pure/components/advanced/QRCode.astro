@@ -1,28 +1,44 @@
 ---
-import config from 'virtual:config'
-
 const { content, class: className, ...props } = Astro.props
 ---
 
-<div id='qrcode-container' class={className} {...props}></div>
+<div id='qrcode-container' class={className} data-content={content} {...props}></div>
 
-<script is:inline src={`${config.npmCDN}/qrcodejs/qrcode.min.js`}></script>
-<script is:inline define:vars={{ content }}>
-  // Load qrcode
-  function loadQRcode(qrcodeContainer) {
-    if (!qrcodeContainer) throw new Error('qrcode container not found')
-    if (qrcodeContainer.innerHTML !== '') return
-    const code = new window.QRCode(qrcodeContainer, content ?? window.location.href)
-    if (!content)
-      document.addEventListener('rd:language-change', () => code.makeCode(window.location.href))
+<script>
+  // Draw the code once it nears the viewport; the encoder is loaded only then
+  const container = document.getElementById('qrcode-container')
+  let drawn = false
+
+  async function draw(element: HTMLElement) {
+    const { renderSVG } = await import('uqr')
+    element.innerHTML = renderSVG(element.dataset.content || window.location.href, {
+      ecc: 'M',
+      border: 2
+    })
+    drawn = true
   }
-  const qrcodeContainer = document.getElementById('qrcode-container')
-  if (!qrcodeContainer) throw new Error('qrcode container not found')
-  loadQRcode(qrcodeContainer)
+
+  if (container) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return
+        observer.disconnect()
+        void draw(container)
+      },
+      { rootMargin: '200px 0px' }
+    )
+    observer.observe(container)
+    if (!container.dataset.content)
+      document.addEventListener('rd:language-change', () => {
+        if (drawn) void draw(container)
+      })
+  }
 </script>
 
 <style>
-  #qrcode-container :global(canvas) {
+  #qrcode-container :global(svg) {
+    display: block;
     width: 100%;
+    height: auto;
   }
 </style>

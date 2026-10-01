@@ -49,7 +49,9 @@
         const current = window.scrollY
         if (current === previous) return
         this.classList.toggle('not-top', current > 20)
-        this.dataset.show = String(current < 350 || current < previous)
+        // Assigning an unchanged value still records a DOM mutation
+        const show = String(current < 350 || current < previous)
+        if (this.dataset.show !== show) this.dataset.show = show
         previous = current
       }
       window.addEventListener('scroll', scroll, { ...options, passive: true })

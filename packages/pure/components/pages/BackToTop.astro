@@ -36,6 +36,7 @@ const { header: headerName, content: contentName, needPercent = true } = Astro.p
     headerObserver
     contentObserver
     scrollFrame = 0
+    scrollPercent = -1
     needPercent = true
 
     calculateScrollPercent() {
@@ -52,7 +53,11 @@ const { header: headerName, content: contentName, needPercent = true } = Astro.p
 
     updateScrollPercent() {
       const percent = this.calculateScrollPercent()
-      this.scrollPercentEl.textContent = percent.toString()
+      // Rewriting the same text would still replace the text node
+      if (percent !== this.scrollPercent) {
+        this.scrollPercent = percent
+        this.scrollPercentEl.textContent = percent.toString()
+      }
       this.actionBtns.classList.toggle('ended', percent >= 100)
     }
 

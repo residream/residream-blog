@@ -77,8 +77,8 @@ const paginationProps = {
             </div>
             {/* posts */}
             <ul class='flex flex-col gap-y-4 text-start'>
-              {page.data.map((post) => (
-                <PostPreview {post} detailed />
+              {page.data.map((post, index) => (
+                <PostPreview {post} detailed eager={index < 2} />
               ))}
             </ul>
             <Paginator {...paginationProps} />

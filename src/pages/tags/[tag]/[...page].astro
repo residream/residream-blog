@@ -65,7 +65,7 @@ const paginationProps = {
 
     <section id='content' class='animate' aria-label='Blog post list'>
       <ul class='flex flex-col gap-y-3 text-start'>
-        {page.data.map((post) => <PostPreview {post} detailed />)}
+        {page.data.map((post, index) => <PostPreview {post} detailed eager={index < 2} />)}
       </ul>
       <Paginator {...paginationProps} />
     </section>

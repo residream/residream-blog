@@ -43,11 +43,21 @@ const toc = generateToc(headings)
     tocLinks: TOCLink[] = []
     headingProgress: Record<string, HeadingProgress> = {}
     controller?: AbortController
-    interval?: number
+    resizeObserver?: ResizeObserver
+    frame = 0
 
     refresh = () => {
       this.disconnectedCallback()
       this.connectedCallback()
+    }
+
+    // Coalesce scroll, resize and layout changes into at most one update per frame
+    scheduleUpdate = () => {
+      if (this.frame) return
+      this.frame = requestAnimationFrame(() => {
+        this.frame = 0
+        this.updatePositionAndStyle()
+      })
     }
 
     initializeElements() {
@@ -100,14 +110,15 @@ const toc = generateToc(headings)
           )
           bar.classList.toggle('is-read', !inView && progress === 1)
           bar.classList.toggle('highlight-bg', inView)
-          bar.style.setProperty('height', `${progress * 90}%`)
+          // Whole percents are precise enough for a 2px bar and change far less often while scrolling
+          bar.style.setProperty('height', `${Math.round(progress * 90)}%`)
         }
       })
     }
 
     connectedCallback() {
       this.controller?.abort()
-      window.clearInterval(this.interval)
+      this.resizeObserver?.disconnect()
       this.controller = new AbortController()
       const { signal } = this.controller
       this.initializeElements()
@@ -135,16 +146,20 @@ const toc = generateToc(headings)
         )
       })
 
-      // Initial first and listen to scroll event
-      this.interval = window.setInterval(this.updatePositionAndStyle, 100)
-      window.addEventListener('scroll', this.updatePositionAndStyle, { signal })
+      // Scrolling and layout changes (images, fonts, expanded code blocks) move the headings
+      window.addEventListener('scroll', this.scheduleUpdate, { signal, passive: true })
+      window.addEventListener('resize', this.scheduleUpdate, { signal })
+      this.resizeObserver = new ResizeObserver(this.scheduleUpdate)
+      this.resizeObserver.observe(document.body)
       document.addEventListener('rd:language-change', this.refresh, { signal })
       this.updatePositionAndStyle()
     }
 
     disconnectedCallback() {
       this.controller?.abort()
-      window.clearInterval(this.interval)
+      this.resizeObserver?.disconnect()
+      cancelAnimationFrame(this.frame)
+      this.frame = 0
     }
   }
 

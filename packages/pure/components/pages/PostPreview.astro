@@ -10,10 +10,12 @@ import { Button, FormattedDate, Icon } from '../user'
 type Props<T extends CollectionKey> = {
   post: CollectionEntry<T>
   detailed?: boolean
+  /** Load the cover immediately; only for previews visible on arrival */
+  eager?: boolean
   class?: string
 }
 
-const { post, detailed = false, class: className } = Astro.props
+const { post, detailed = false, eager = false, class: className } = Astro.props
 const { id, data } = post
 const { remarkPluginFrontmatter } = await render(post)
 const postDate = data.updatedDate ?? data.publishDate
@@ -38,7 +40,7 @@ const previewStyle =
         <Image
           alt={data.heroImage.alt || data.title}
           class='cover-image absolute end-0 top-0 z-0 h-2/3 w-full rounded-2xl object-cover opacity-50 transition-opacity duration-300 group-hover:opacity-70 md:h-full md:w-3/5'
-          loading='eager'
+          loading={eager ? 'eager' : 'lazy'}
           {...data.heroImage}
         />
       )

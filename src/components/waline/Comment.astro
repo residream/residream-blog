@@ -1,4 +1,5 @@
 ---
+import { getLocale } from '@/utils/i18n'
 import config from '@/site-config'
 
 import '@waline/client/style'
@@ -16,79 +17,146 @@ const { class: className } = Astro.props
         class={cn('not-prose', className)}
         data-hide-meta={!config.integ.waline.showMeta}
       >
-        Comment seems to stuck. Try to refresh?✨
+        {getLocale(Astro.url) === 'en' ? 'Loading comments…' : '评论加载中…'}
       </div>
     </comment-component>
   )
 }
 
 <script>
-  import { init as walineInit } from '@waline/client'
-  import type { WalineEmojiPresets } from '@waline/client'
+  import type { WalineEmojiPresets, WalineInstance } from '@waline/client'
+  import { commentCount } from '@waline/client/comment'
+  import { pageviewCount } from '@waline/client/pageview'
   import config from 'virtual:config'
 
-  import { getLocale, withoutLocale } from '@/utils/i18n'
+  import { getLocale, withoutLocale, type Locale } from '@/utils/i18n'
 
   const walineConfig = config.integ.waline
+  // Counts are requested with the page, so readers who never reach the comments are still counted
+  const { pageview, comment, ...walineOptions } = walineConfig.additionalConfigs
+  const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
+  const message = (locale: Locale) =>
+    local
+      ? locale === 'en'
+        ? 'Comments are disabled in the local preview.'
+        : '本地预览暂不连接评论服务。'
+      : locale === 'en'
+        ? 'Loading comments…'
+        : '评论加载中…'
+
+  // A link to a single comment can only scroll once the comments are rendered
+  const linksToComment = () => {
+    try {
+      const id = decodeURIComponent(location.hash.slice(1))
+      return !!id && !document.getElementById(id)
+    } catch {
+      return false
+    }
+  }
 
   class Comment extends HTMLElement {
-    instance: ReturnType<typeof walineInit> = null
+    instance: WalineInstance | null = null
+    observer?: IntersectionObserver
+    loading = false
 
     connectedCallback() {
       document.addEventListener('rd:language-change', this.updateLocale)
       if ((document as Document & { prerendering?: boolean }).prerendering) {
-        document.addEventListener('prerenderingchange', this.initialize, { once: true })
+        document.addEventListener('prerenderingchange', this.start, { once: true })
       } else {
-        this.initialize()
+        this.start()
       }
     }
 
     disconnectedCallback() {
       document.removeEventListener('rd:language-change', this.updateLocale)
-      document.removeEventListener('prerenderingchange', this.initialize)
+      document.removeEventListener('prerenderingchange', this.start)
+      this.observer?.disconnect()
+      this.observer = undefined
       this.instance?.destroy()
       this.instance = null
     }
 
     updateLocale = () => {
+      const lang = getLocale(location.pathname)
       if (this.instance) {
-        this.instance.update({
-          lang: getLocale(location.pathname),
-          path: withoutLocale(location.pathname)
-        })
-      } else this.initialize()
+        this.instance.update({ lang, path: withoutLocale(location.pathname) })
+      } else if (!this.loading) {
+        const element = this.querySelector('#waline')
+        if (element) element.textContent = message(lang)
+      }
     }
 
-    initialize = () => {
-      if (!this.isConnected || this.instance) return
-      if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) {
-        const element = this.querySelector('#waline')
-        if (element)
-          element.textContent =
-            getLocale(location.pathname) === 'en'
-              ? 'Comments are disabled in the local preview.'
-              : '本地预览暂不连接评论服务。'
+    start = () => {
+      if (!this.isConnected || this.observer || this.instance) return
+      if (local) {
+        this.updateLocale()
         return
       }
+      const serverURL = walineConfig.server || ''
+      const path = withoutLocale(location.pathname)
+      if (pageview)
+        pageviewCount({
+          serverURL,
+          path,
+          selector: typeof pageview === 'string' ? pageview : undefined
+        })
+      if (comment)
+        commentCount({
+          serverURL,
+          path,
+          selector: typeof comment === 'string' ? comment : undefined
+        })
+      if (linksToComment()) {
+        void this.initialize()
+        return
+      }
+      // The comment UI (Vue, about 70 KB gzip) loads once it is close to the viewport
+      this.observer = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return
+          this.observer?.disconnect()
+          void this.initialize()
+        },
+        { rootMargin: '800px 0px' }
+      )
+      this.observer.observe(this.querySelector('#waline') ?? this)
+    }
+
+    initialize = async () => {
+      if (!this.isConnected || this.instance || this.loading) return
+      this.loading = true
       ;(globalThis as unknown as { __VUE_OPTIONS_API__: boolean }).__VUE_OPTIONS_API__ = true
       ;(globalThis as unknown as { __VUE_PROD_DEVTOOLS__: boolean }).__VUE_PROD_DEVTOOLS__ = false
       ;(
         globalThis as unknown as { __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: boolean }
       ).__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false
 
-      const emoji = walineConfig.emoji?.map(
-        (preset) => `${config.npmCDN}/@waline/emojis@1.2.0/${preset}` as WalineEmojiPresets
-      )
-
-      this.instance = walineInit({
-        el: 'comment-component #waline',
-        serverURL: walineConfig.server || '',
-        emoji,
-        reaction: ['/icons/heart-item.svg'],
-        ...walineConfig.additionalConfigs,
-        lang: getLocale(location.pathname),
-        path: withoutLocale(location.pathname)
-      })
+      try {
+        const { init } = await import('@waline/client')
+        if (!this.isConnected || this.instance) return
+        const emoji = walineConfig.emoji?.map(
+          (preset) => `${config.npmCDN}/@waline/emojis@1.2.0/${preset}` as WalineEmojiPresets
+        )
+        this.instance = init({
+          el: 'comment-component #waline',
+          serverURL: walineConfig.server || '',
+          emoji,
+          reaction: ['/icons/heart-item.svg'],
+          ...walineOptions,
+          lang: getLocale(location.pathname),
+          path: withoutLocale(location.pathname)
+        })
+      } catch {
+        const element = this.querySelector('#waline')
+        if (element)
+          element.textContent =
+            getLocale(location.pathname) === 'en'
+              ? 'Comments failed to load. Try refreshing the page.'
+              : '评论加载失败，请刷新页面重试。'
+      } finally {
+        this.loading = false
+      }
     }
   }
 
