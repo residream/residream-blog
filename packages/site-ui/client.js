@@ -77,7 +77,10 @@
     }
   }
   customElements.define('rd-header', SiteHeader)
+  let currentToast = null
   document.addEventListener('toast', (event) => {
+    // A new message replaces the visible one instead of stacking on top of it
+    currentToast?.remove()
     const toast = document.createElement('div')
     toast.setAttribute('role', 'status')
     const icon = document.querySelector('template[data-rd-toast-icon]')
@@ -87,6 +90,21 @@
     message.textContent = String(event.detail?.message || '')
     toast.append(message)
     document.body.append(toast)
-    setTimeout(() => toast.remove(), event.detail?.time || 3000)
+    currentToast = toast
+    setTimeout(() => {
+      const done = () => {
+        toast.remove()
+        if (currentToast === toast) currentToast = null
+      }
+      if (!toast.isConnected || !toast.animate) return done()
+      // Animated from script, so the sub-sites need no extra CSS for it
+      const still = matchMedia('(prefers-reduced-motion: reduce)').matches
+      toast
+        .animate(
+          [{ opacity: 1 }, { opacity: 0, transform: still ? 'none' : 'translateY(0.5rem)' }],
+          { duration: 200, easing: 'ease-in', fill: 'forwards' }
+        )
+        .finished.then(done, done)
+    }, event.detail?.time || 3000)
   })
 })()
