@@ -118,25 +118,28 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 <div class='mt-4 w-1/2 border-t max-md:mx-auto sm:mt-6 sm:w-1/3'></div>
 
 <script>
-  const viewportHeight = window.innerHeight
-  const threshold1 = viewportHeight / 9
-  const threshold2 = (viewportHeight * 2) / 9
-  const threshold3 = (viewportHeight * 3) / 9
-  const image = document.getElementById('blurImage') as HTMLImageElement
+  // Browsers with scroll-driven animations fade the glow in CSS; others follow the scroll here
+  const image = document.getElementById('blurImage')
 
-  if (image) {
-    window.addEventListener('scroll', () => {
-      const scrollDistance = window.scrollY
-      // console.log(scrollDistance, threshold1, threshold2, threshold3)
-
-      if (scrollDistance >= threshold3) {
-        image.style.opacity = '0.15'
-      } else if (scrollDistance >= threshold2) {
-        image.style.opacity = '0.3'
-      } else if (scrollDistance >= threshold1) {
-        image.style.opacity = '0.45'
-      }
-    })
+  if (image && !CSS.supports('animation-timeline: scroll()')) {
+    let frame = 0
+    let opacity = '0.6'
+    const update = () => {
+      frame = 0
+      const progress = Math.min(1, window.scrollY / (window.innerHeight / 3))
+      const next = String(Math.round((0.6 - 0.45 * progress) * 20) / 20)
+      if (next === opacity) return
+      opacity = next
+      image.style.opacity = next
+    }
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!frame) frame = requestAnimationFrame(update)
+      },
+      { passive: true }
+    )
+    update()
   }
 </script>
 
@@ -144,5 +147,25 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
   #blurImage {
     --un-blur: blur(24px);
     filter: var(--un-blur);
+  }
+  /* Fades from 0.6 to 0.15 over the first third of a screen and back again.
+     Longhands only: the CSS minifier folds a timeline into the `animation` shorthand,
+     which browsers reject as a whole. */
+  @supports (animation-timeline: scroll()) {
+    #blurImage {
+      animation-name: hero-glow-fade;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 0 33vh;
+    }
+  }
+  @keyframes hero-glow-fade {
+    from {
+      opacity: 0.6;
+    }
+    to {
+      opacity: 0.15;
+    }
   }
 </style>

@@ -14,10 +14,19 @@
   animation: 300ms fade-in-up;
   animation-fill-mode: forwards;
 }
+@keyframes fade-in-opacity {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+/* Reduced motion keeps a brief fade but drops the upward movement */
 @media (prefers-reduced-motion) {
   .animate {
     opacity: 0;
-    animation: 100ms fade-in-up;
+    animation: 100ms fade-in-opacity;
     animation-fill-mode: forwards;
   }
 }
