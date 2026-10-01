@@ -20,6 +20,35 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 const socialImageURL = new URL(ogImage ? ogImage : config.socialCard, Astro.url).href
 const locale = getLocale(Astro.url)
 const { alternates } = await languageLinks(Astro.url)
+
+// Chromium prefetches same-site links that Astro's prefetch does not handle, on hover or touch.
+// Prefetch only: prerendering stays off because of the Chrome 154 crash (see astro.config.ts)
+const speculationRules = {
+  prefetch: [
+    {
+      source: 'document',
+      where: {
+        and: [
+          { href_matches: '/*' },
+          {
+            not: {
+              href_matches: ['xml', 'pdf', 'json', 'txt', 'zip', 'rss', 'png', 'jpg', 'webp'].map(
+                (extension) => ({ pathname: `/*.${extension}` })
+              )
+            }
+          },
+          {
+            not: {
+              selector_matches:
+                '[data-astro-prefetch], [data-language-switch], [target]:not([target="_self"]):not([target=""]), [download], [href*="#"]'
+            }
+          }
+        ]
+      },
+      eagerness: 'moderate'
+    }
+  ]
+}
 ---
 
 <meta charset='utf-8' />
@@ -30,6 +59,7 @@ const { alternates } = await languageLinks(Astro.url)
 <meta content='IE=edge' http-equiv='X-UA-Compatible' />
 <LanguageNavigation />
 {motion.viewTransitions && <ViewTransitions />}
+<script is:inline type='speculationrules' set:html={JSON.stringify(speculationRules)} />
 <title>{siteTitle}</title>
 
 {/* Icons / Favicon */}

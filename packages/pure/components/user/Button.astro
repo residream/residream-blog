@@ -23,7 +23,7 @@ const { as: Tag = 'a', class: className, title, href, variant = 'button', ...pro
     className
   )}
   href={href}
-  data-astro-prefetch
+  data-astro-prefetch={Tag === 'a' && href ? 'hover' : undefined}
   {...props}
 >
   <slot name='before'>

@@ -24,11 +24,13 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 {
   heroImage && (
     <div class='hero-image relative mb-6'>
+      {/* The cover's own color fills its place until the image arrives, e.g. after a page switch */}
       <Image
         alt={heroImage.alt || title}
         class='cover-image relative z-10 h-auto w-full max-w-[65ch] rounded-2xl object-contain'
         fetchpriority='high'
         loading='eager'
+        style={heroImage.color ? `background-color:${heroImage.color}` : undefined}
         {...heroImage}
       />
       <Image

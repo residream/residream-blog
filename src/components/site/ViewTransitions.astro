@@ -1,9 +1,20 @@
 {/* Rendered only when `motion.viewTransitions` is on in site.config.ts */}
 
 <script is:inline>
-  // Runs before the first frame, so a page arriving through a transition skips the entrance animation
   addEventListener('pagereveal', (event) => {
-    if (event.viewTransition) document.documentElement.setAttribute('data-view-transition', '')
+    if (!event.viewTransition) return
+    const root = document.documentElement
+    root.setAttribute('data-page-arrival', '')
+    const cleanup = () => root.removeAttribute('data-page-arrival')
+    event.viewTransition.ready
+      .then(async () => {
+        const entrances = Array.from(document.querySelectorAll('.animate')).flatMap((element) =>
+          element.getAnimations().map((animation) => animation.finished.catch(() => {}))
+        )
+        await Promise.all([event.viewTransition.finished, ...entrances])
+        cleanup()
+      }, cleanup)
+      .catch(cleanup)
   })
 </script>
 
@@ -16,13 +27,52 @@
   rd-header {
     view-transition-name: site-header;
   }
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation-duration: 0.2s;
+  ::view-transition-group(root) {
+    animation-duration: 0.12s;
   }
-  html[data-view-transition] .animate {
+  ::view-transition-old(root) {
+    animation: page-leave 0.12s ease-out both;
+    mix-blend-mode: normal;
+  }
+  ::view-transition-new(root) {
+    animation: page-reveal 0.12s step-end both;
+    mix-blend-mode: normal;
+  }
+  /* Show only the destination header; compact and expanded snapshots must not overlap. */
+  ::view-transition-group(site-header),
+  ::view-transition-new(site-header) {
     animation: none;
-    opacity: 1;
+  }
+  ::view-transition-old(site-header) {
+    display: none;
+  }
+  ::view-transition-new(site-header) {
+    mix-blend-mode: normal;
+  }
+  /* After the exit, keep the original 300ms entrance and its 50/100/150ms stagger. */
+  html[data-page-arrival] .animate {
+    animation-delay: 120ms;
+  }
+  html[data-page-arrival] #content-header {
+    animation-delay: 170ms;
+  }
+  html[data-page-arrival] #content {
+    animation-delay: 220ms;
+  }
+  html[data-page-arrival] #sidebar {
+    animation-delay: 270ms;
+  }
+  @keyframes page-leave {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes page-reveal {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 </style>
