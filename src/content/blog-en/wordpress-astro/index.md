@@ -87,11 +87,13 @@ Here's a local comparison of an article page, with the CPU slowed down 4× to mi
 
 "Time until interactive" is when scripts such as the header menu and table of contents start working. The numbers are medians of three runs, so only the order of magnitude matters.
 
+Navigating within the site gets a head start too: when you reach the end of a post, the previous and next posts are downloaded in advance, and in browsers like Chrome and Edge a page is fetched as soon as you hover over or press its link. The theme's button links had never actually been prefetched because of how the attribute was written, which is fixed now as well. In a local test with 300 ms of simulated network latency, opening the next post, the home page, or a tag page went from about 350 ms to 40–70 ms until the first paint.
+
 ## Motion
 
 I went back and forth for a while on whether to add motion at all. In the end, the rule was to use only what browsers provide natively — CSS animations, View Transitions, and scroll-driven animations — with no animation library and without turning the site into a single-page app:
 
-- Navigating within the site keeps the header in place while the content cross-fades.
+- Navigating within the site keeps the header in place: the old page fades out first, then the new content slides up in the theme's original rhythm.
 - Switching themes reveals the new theme in a circle growing from the toggle (inspired by [antfu.me](https://antfu.me)), and along the way I fixed some elements changing color a beat behind the rest of the page.
 - Posts now have a reading progress bar at the top, built with a CSS scroll-driven animation and no script.
 - The blurred glow behind the cover image fades smoothly as you scroll and comes back when you scroll up.
