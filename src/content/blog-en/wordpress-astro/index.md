@@ -68,6 +68,42 @@ After launch, I noticed that paging through the blog list in Chrome would someti
 
 In the end, I turned `clientPrerender` off and kept only regular prefetching, which downloads a page as soon as its link scrolls into view. In a local side-by-side test, I couldn't see any noticeable difference in paging speed.
 
+## Faster loading
+
+I'd been busy adding features, so this time Astra and I went back to look at performance. Article pages loaded two scripts from jsDelivr — the QR code and image zoom — that blocked page parsing: until they finished downloading, the header menu, theme toggle, table of contents, and comments all just had to wait. jsDelivr is hit-and-miss from mainland China, so on a slow day a page could look fully loaded yet not respond to clicks.
+
+Both are now bundled with the site. Image zoom still uses medium-zoom, while the QR code switched to the smaller uqr and is only generated once you scroll near the end of a post. The Waline emoji packs are served from this site as well, so the blog no longer loads anything from jsDelivr.
+
+The comment section now loads Waline only when you're about to reach it, while view and comment counts are still recorded when the page opens. I also removed a timer that polled the table of contents every 100 ms, and scrolling now only updates the page when a value actually changes.
+
+Here's a local comparison of an article page, with the CPU slowed down 4× to mimic a mid-range phone:
+
+| Metric                                      | Before  | After  |
+| ------------------------------------------- | ------- | ------ |
+| Time until interactive                      | 1417 ms | 197 ms |
+| Time until interactive, jsDelivr 3 s late   | 3389 ms | 205 ms |
+| JavaScript loaded on arrival (uncompressed) | 211 KB  | 29 KB  |
+| Background wake-ups in 3 idle seconds       | 30      | 0      |
+
+"Time until interactive" is when scripts such as the header menu and table of contents start working. The numbers are medians of three runs, so only the order of magnitude matters.
+
+## Motion
+
+I went back and forth for a while on whether to add motion at all. In the end, the rule was to use only what browsers provide natively — CSS animations, View Transitions, and scroll-driven animations — with no animation library and without turning the site into a single-page app:
+
+- Navigating within the site keeps the header in place while the content cross-fades.
+- Switching themes reveals the new theme in a circle growing from the toggle (inspired by [antfu.me](https://antfu.me)), and along the way I fixed some elements changing color a beat behind the rest of the page.
+- Posts now have a reading progress bar at the top, built with a CSS scroll-driven animation and no script.
+- The blurred glow behind the cover image fades smoothly as you scroll and comes back when you scroll up.
+- The mobile table-of-contents drawer now animates when closing, closes with Esc, and folds away once you pick a section.
+- With "reduce motion" enabled in the system settings, these transitions are turned off or simplified.
+
+Browsers that don't support these features simply keep the old behavior.
+
+I also fell into one trap along the way: in testing, the scroll-driven animations didn't work at all. It turned out the CSS minifier had folded `animation-timeline` into the `animation` shorthand, which browsers reject when it includes a timeline, so the whole declaration was dropped. Writing the properties out one by one fixed it.
+
+The analytics, status, and online tools sub-sites share the main site's header and theme, so the new theme switching has been synced to them as well.
+
 
 ## Acknowledgments
 
