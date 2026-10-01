@@ -28,14 +28,14 @@
     view-transition-name: site-header;
   }
   ::view-transition-group(root) {
-    animation-duration: 0.12s;
+    animation-duration: 0.08s;
   }
   ::view-transition-old(root) {
-    animation: page-leave 0.12s ease-out both;
+    animation: page-leave 0.08s ease-out both;
     mix-blend-mode: normal;
   }
   ::view-transition-new(root) {
-    animation: page-reveal 0.12s step-end both;
+    animation: page-reveal 0.08s step-end both;
     mix-blend-mode: normal;
   }
   /* Show only the destination header; compact and expanded snapshots must not overlap. */
@@ -51,16 +51,16 @@
   }
   /* After the exit, keep the original 300ms entrance and its 50/100/150ms stagger. */
   html[data-page-arrival] .animate {
-    animation-delay: 120ms;
+    animation-delay: 80ms;
   }
   html[data-page-arrival] #content-header {
-    animation-delay: 170ms;
+    animation-delay: 130ms;
   }
   html[data-page-arrival] #content {
-    animation-delay: 220ms;
+    animation-delay: 180ms;
   }
   html[data-page-arrival] #sidebar {
-    animation-delay: 270ms;
+    animation-delay: 230ms;
   }
   @keyframes page-leave {
     to {
