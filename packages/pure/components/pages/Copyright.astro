@@ -19,16 +19,23 @@ const {
 } = Astro.props
 
 const image = typeof heroImage?.src === 'string' ? heroImage?.src : (heroImage?.src?.src ?? '')
+const licenseUrl = `https://creativecommons.org/licenses/by-nc-sa/4.0/deed.${getLocale(Astro.url) === 'en' ? 'en' : 'zh-hans'}`
+const pageUrl = Astro.url.href
+const imageUrl = image ? new URL(image, Astro.url).href : ''
 
 const shares = {
   weibo: {
-    link: `http://service.weibo.com/share/share.php?url=${Astro.url}&title=${title}&pic=${image}`
+    link: `https://service.weibo.com/share/share.php?${new URLSearchParams({
+      url: pageUrl,
+      title,
+      ...(imageUrl ? { pic: imageUrl } : {})
+    })}`
   },
   x: {
-    link: `https://x.com/intent/tweet?text='${title}'&url='${Astro.url}'&via='${config.author}'`
+    link: `https://x.com/intent/tweet?${new URLSearchParams({ text: title, url: pageUrl })}`
   },
   bluesky: {
-    link: `https://bsky.app/intent/compose?text=${title}%0A${Astro.url}`
+    link: `https://bsky.app/intent/compose?${new URLSearchParams({ text: `${title}\n${pageUrl}` })}`
   }
 } as const
 ---
@@ -73,8 +80,9 @@ const shares = {
       <span>Copyright</span>
       <a
         class='text-sm text-foreground max-sm:place-self-center'
-        href='https://creativecommons.org/licenses/by/4.0/'
+        href={licenseUrl}
         target='_blank'
+        rel='license noopener noreferrer'
       >
         CC BY-NC-SA 4.0
       </a>
@@ -103,6 +111,7 @@ const shares = {
           <a
             href={shares[share].link}
             target='_blank'
+            rel='noopener noreferrer'
             id={`share-${share}`}
             aria-label={`Share to ${share}`}
             class='group rounded-full bg-muted p-1 text-muted-foreground transition-colors hover:text-primary sm:p-1.5'

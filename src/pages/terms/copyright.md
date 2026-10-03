@@ -7,7 +7,7 @@ language: 'zh-CN'
 back: '/terms'
 ---
 
-本站所有原创文章采用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh) 许可协议。
+本站所有原创文章采用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 许可协议。
 
 转载时请：
 
