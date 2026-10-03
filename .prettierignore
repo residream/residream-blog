@@ -1,3 +1,5 @@
 node_modules/**
 src/icons/**
 public/scripts/*
+# Conditional inline script syntax is not supported by prettier-plugin-astro yet.
+packages/pure/components/user/Tabs.astro
