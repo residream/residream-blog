@@ -2,7 +2,7 @@
 layout: '@/layouts/IndividualPage.astro'
 
 title: 'Privacy Policy'
-description: '最后更新：2026-09-27'
+description: '最后更新：2026-10-03'
 language: 'zh-CN'
 back: '/terms'
 ---
@@ -24,6 +24,8 @@ back: '/terms'
 - 评论内容及所在页面
 
 邮箱用于在收到回复时通知你，并会经哈希处理后用于获取 Gravatar 头像。文章页显示的阅读量同样由 Waline 记录，只保存路径与计数，不关联到具体个人。
+
+评论框会在浏览器的本地存储中保存你填写过的昵称、邮箱和网址，以及表情、点赞等状态，方便下次使用；清除本站的网站数据即可删除。
 
 ## 访问统计
 
@@ -50,10 +52,13 @@ Counterscale 不使用 Cookie，也不在你的浏览器中写入存储。
 
 页面会从以下第三方加载资源，它们可能因此获知你的 IP 与 User Agent：
 
-- 统计接口 Substats，用于展示 GitHub、Steam 等平台的公开数字
-- 语录接口 一言（hitokoto），用于首页底部的随机句子
+- 语录接口 一言（hitokoto），用于中文首页底部的随机句子
+- 语录接口 DummyJSON，用于英文首页底部的随机句子
+- GitHub 头像服务（avatars.githubusercontent.com），用于文章中 GitHub 项目卡片的头像
+- GitHub 贡献图服务 ghchart（ghchart.rshah.org），用于 Projects 页的贡献图
+- Giphy，用于评论框的 GIF 搜索，以及加载评论中来自该服务的图片
 
-这些服务的数据处理遵循各自的隐私政策。
+这些服务的数据处理遵循各自的隐私政策。About 页展示的 GitHub、Bilibili、Steam 等平台公开数字由本站服务器定期获取，展示这些数字不需要你的浏览器直接访问上述平台。
 
 ## 联系方式
 

@@ -2,7 +2,7 @@
 layout: '@/layouts/IndividualPage.astro'
 
 title: 'Privacy Policy'
-description: 'Last updated: 2026-09-27'
+description: 'Last updated: 2026-10-03'
 language: 'en'
 back: '/terms'
 ---
@@ -24,6 +24,8 @@ This site uses [Waline](https://waline.js.org) for comments. When you post a com
 - The content of the comment and the page it was posted on
 
 Your email address is used to notify you when someone replies, and it is also hashed to fetch your Gravatar avatar. The view counts shown on post pages are also recorded by Waline; only the page path and the count are stored, and they are not linked to any individual.
+
+The comment box saves the nickname, email address and website you entered, along with emoji and like states, in your browser's local storage for next time. Clearing this site's data removes them.
 
 ## Visitor analytics
 
@@ -50,10 +52,13 @@ The appearance you choose (match system, light, or dark) is saved in your browse
 
 Pages load resources from the following third parties, which may therefore learn your IP address and User Agent:
 
-- The Substats statistics API, used to display public numbers from platforms such as GitHub and Steam
-- The Hitokoto quote API, used for the random sentence at the bottom of the home page
+- The Hitokoto quote API, used for the random sentence at the bottom of the Chinese home page
+- The DummyJSON quote API, used for the random sentence at the bottom of the English home page
+- GitHub's avatar service (avatars.githubusercontent.com), used for the avatars on GitHub project cards in posts
+- The ghchart service (ghchart.rshah.org), used for the GitHub contribution chart on the Projects page
+- Giphy, used for GIF searches in the comment box and to load images from that service in comments
 
-These services process data in accordance with their own privacy policies.
+These services process data in accordance with their own privacy policies. The public numbers on the About page (from GitHub, Bilibili, Steam and others) are fetched periodically by this site's server. Displaying these numbers does not require your browser to contact those platforms directly.
 
 ## Contact
 
