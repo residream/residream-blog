@@ -87,10 +87,45 @@ function update(current, next) {
   for (const node of remaining.slice(cursor)) node.remove()
 }
 
+const protectedEmail = '/cdn-cgi/l/email-protection'
+
+function decodeEmail(hex) {
+  if (typeof hex !== 'string' || !/^(?:[\da-f]{2}){2,}$/i.test(hex)) return null
+  const key = parseInt(hex.slice(0, 2), 16)
+  const bytes = new Uint8Array(hex.length / 2 - 1)
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hex.slice(i * 2 + 2, i * 2 + 4), 16) ^ key
+  }
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+  } catch {
+    return null
+  }
+}
+
+// Cloudflare only decodes the initial document; fetched translations need the same treatment.
+function revealEmails(doc) {
+  for (const link of doc.querySelectorAll(`a[href*="${protectedEmail}#"]`)) {
+    try {
+      const url = new URL(link.getAttribute('href'), location.href)
+      if (url.origin !== location.origin || url.pathname !== protectedEmail) continue
+      const email = decodeEmail(url.hash.slice(1))
+      if (email) link.setAttribute('href', `mailto:${email}`)
+    } catch {
+      // Leave malformed links unchanged.
+    }
+  }
+  for (const element of doc.querySelectorAll('.__cf_email__[data-cfemail]')) {
+    const email = decodeEmail(element.getAttribute('data-cfemail'))
+    if (email) element.replaceWith(doc.createTextNode(email))
+  }
+}
+
 const metadata =
   'title, meta[name="title"], meta[name="description"], meta[property], link[rel="canonical"], link[rel="alternate"]'
 
 export function updateLanguageContent(next) {
+  revealEmails(next)
   update(document.getElementById('main-container'), next.getElementById('main-container'))
   document.documentElement.lang = next.documentElement.lang
   const oldMeta = document.head.querySelectorAll(metadata)

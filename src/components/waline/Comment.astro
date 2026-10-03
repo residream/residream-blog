@@ -34,6 +34,10 @@ const { class: className } = Astro.props
   const walineConfig = config.integ.waline
   // Counts are requested with the page, so readers who never reach the comments are still counted
   const { pageview, comment, ...walineOptions } = walineConfig.additionalConfigs
+  const localeFor = (lang: Locale) =>
+    lang === 'en'
+      ? walineOptions.locale
+      : { ...walineOptions.locale, placeholder: '欢迎评论（填写邮箱可收到回复，无需登录）' }
   const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
   const message = (locale: Locale) =>
     local
@@ -80,7 +84,11 @@ const { class: className } = Astro.props
     updateLocale = () => {
       const lang = getLocale(location.pathname)
       if (this.instance) {
-        this.instance.update({ lang, path: withoutLocale(location.pathname) })
+        this.instance.update({
+          lang,
+          path: withoutLocale(location.pathname),
+          locale: localeFor(lang)
+        })
       } else if (!this.loading) {
         const element = this.querySelector('#waline')
         if (element) element.textContent = message(lang)
@@ -146,6 +154,7 @@ const { class: className } = Astro.props
           emoji,
           reaction: ['/icons/heart-item.svg'],
           ...walineOptions,
+          locale: localeFor(getLocale(location.pathname)),
           lang: getLocale(location.pathname),
           path: withoutLocale(location.pathname)
         })
