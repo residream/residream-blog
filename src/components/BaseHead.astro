@@ -17,7 +17,17 @@ const { articleDate, description, ogImage, title } = Astro.props
 
 const siteTitle = `${title} ${config.titleDelimiter} ${config.title}`
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
-const socialImageURL = new URL(ogImage ? ogImage : config.socialCard, Astro.url).href
+const socialImageURL = new URL(
+  typeof ogImage === 'object' ? ogImage.src : ogImage || config.socialCard,
+  Astro.url
+).href
+const imageSize =
+  typeof ogImage === 'object'
+    ? ogImage
+    : !ogImage || ogImage === config.socialCard
+      ? { width: 1200, height: 630 }
+      : undefined
+const noindex = /^(?:\/en)?\/404(?:\.html)?\/?$/.test(Astro.url.pathname)
 const locale = getLocale(Astro.url)
 const { alternates } = await languageLinks(Astro.url)
 
@@ -61,6 +71,7 @@ const speculationRules = {
 {motion.viewTransitions && <ViewTransitions />}
 <script is:inline type='speculationrules' set:html={JSON.stringify(speculationRules)} />
 <title>{siteTitle}</title>
+{noindex && <meta name='robots' content='noindex' />}
 
 {/* Icons / Favicon */}
 <link rel='icon' type={config.favicon.type} href={config.favicon.href} />
@@ -103,8 +114,14 @@ const speculationRules = {
 <meta content={config.title} property='og:site_name' />
 <meta content={locale === 'en' ? 'en_US' : config.locale.attrs} property='og:locale' />
 <meta content={socialImageURL} property='og:image' />
-<meta content='1200' property='og:image:width' />
-<meta content='630' property='og:image:height' />
+{
+  imageSize && (
+    <>
+      <meta content={String(imageSize.width)} property='og:image:width' />
+      <meta content={String(imageSize.height)} property='og:image:height' />
+    </>
+  )
+}
 {
   articleDate && (
     <>

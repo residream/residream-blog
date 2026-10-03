@@ -1,10 +1,6 @@
 import type { APIRoute } from 'astro'
 
 const robotsTxt = `
-User-agent: GPTBot
-User-agent: ClaudeBot
-User-agent: Claude-Web
-
 User-agent: *
 Allow: /
 

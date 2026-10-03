@@ -7,7 +7,7 @@ export type { IconsType } from '../libs/icons'
 export interface SiteMeta {
   title: string
   description?: string
-  ogImage?: string | undefined
+  ogImage?: string | { src: string; width: number; height: number }
   articleDate?: string | undefined
 }
 

@@ -10,6 +10,7 @@ import config from 'virtual:config'
 
 import { MediumZoom } from 'astro-pure/advanced'
 import { ArticleBottom, Copyright, Hero, TOC } from 'astro-pure/components/pages'
+import type { SiteMeta } from 'astro-pure/types'
 import PageLayout from '@/layouts/ContentLayout.astro'
 import { Comment, PageInfo } from '@/components/waline'
 import { splitGithubCards } from '@/utils/github-cards'
@@ -35,11 +36,27 @@ const { description, heroImage, publishDate, title, draft: isDraft, comment } = 
 
 const enableComment = comment && config.integ.waline.enable
 
-const socialImage = heroImage
-  ? typeof heroImage.src === 'string'
-    ? heroImage.src
-    : (await getImage({ src: heroImage.src })).src
-  : config.socialCard
+let socialImage: SiteMeta['ogImage'] = config.socialCard
+if (heroImage) {
+  if (typeof heroImage.src === 'string') {
+    socialImage = heroImage.src
+  } else {
+    // Keep the share-card ratio without asking Astro to enlarge a smaller source.
+    const scale = Math.min(1, heroImage.src.width / 1200, heroImage.src.height / 630)
+    const width = Math.max(1, Math.floor(1200 * scale))
+    const height = Math.max(1, Math.floor(630 * scale))
+    const { src } = await getImage({
+      src: heroImage.src,
+      width,
+      height,
+      fit: 'cover',
+      position: 'attention',
+      format: 'jpg',
+      quality: 80
+    })
+    socialImage = { src, width, height }
+  }
+}
 const articleDate = publishDate.toISOString()
 const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--un-bg-opacity, 1))'
 const contentParts = body?.includes('<github-card')
