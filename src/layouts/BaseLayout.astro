@@ -5,7 +5,7 @@ import Footer from '@/components/site/Footer.astro'
 import Header from '@/components/site/Header.astro'
 import ThemeProvider from '@/components/site/ThemeProvider.astro'
 import { getLocale } from '@/utils/i18n'
-import config from '@/site-config'
+import { seoDescriptions } from '@/site-config'
 
 // Import the global.css file here so that it is included on
 // all pages through the use of the <BaseLayout /> component.
@@ -18,14 +18,16 @@ interface Props {
   highlightColor?: string
 }
 
+const locale = getLocale(Astro.url)
+
 const {
-  meta: { articleDate, description = config.description, ogImage, title },
+  meta: { articleDate, description = seoDescriptions[locale], ogImage, title },
   highlightColor,
   ...props
 } = Astro.props
 ---
 
-<html lang={getLocale(Astro.url)}>
+<html lang={locale}>
   <head>
     <BaseHead {articleDate} {description} {ogImage} {title} />
     <ThemeProvider />

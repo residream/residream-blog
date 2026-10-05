@@ -1,12 +1,18 @@
 import type { CardListData, Config, IntegrationUserConfig, ThemeUserConfig } from 'astro-pure/types'
 
+/** Default metadata descriptions for pages without their own summary. */
+export const seoDescriptions = {
+  'zh-CN': '记录 CTF Web 题解、网络安全实践与编程学习笔记',
+  en: 'CTF web writeups, cybersecurity practice, and programming notes'
+}
+
 export const theme: ThemeUserConfig = {
   // [Basic]
   /** Title for your website. Will be used in metadata and as browser tab title. */
   title: 'Residream の blog',
   /** Will be used in index page & copyright declaration */
   author: 'Residream',
-  /** Description metadata for your website. Can be used in page metadata. */
+  /** Legacy tagline for RSS, friend link info, and the quote fallback. */
   description: 'Trace to the Core, Race to the Root',
   /** The default favicon for your site which should be a path to an image in the `public/` directory. */
   favicon: '/favicon/favicon.ico',
