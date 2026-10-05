@@ -7,7 +7,8 @@ import { integ, terms } from '@/site-config'
 
 const meta = {
   title: 'Site policy',
-  description: '查看本站的条款、政策与使用说明'
+  description:
+    getLocale(Astro.url) === 'en' ? 'Site policy documentation' : '查看本站的条款、政策与使用说明'
 }
 ---
 

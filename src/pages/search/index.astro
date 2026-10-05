@@ -6,7 +6,10 @@ import { getLocale, localePath } from '@/utils/i18n'
 import { integ } from '@/site-config'
 
 const meta = {
-  description: '搜索本站文章、题解与学习笔记',
+  description:
+    getLocale(Astro.url) === 'en'
+      ? 'Search relative posts of the whole blog'
+      : '搜索本站文章、题解与学习笔记',
   title: 'Search'
 }
 ---
