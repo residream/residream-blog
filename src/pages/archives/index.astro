@@ -12,10 +12,7 @@ const allPostsByDate = sortMDByDate(allPosts)
 const allPostsByYear = groupCollectionsByYear(allPostsByDate)
 
 const meta = {
-  description:
-    getLocale(Astro.url) === 'en'
-      ? 'A list of all the years of creating my posts'
-      : '按年份浏览博客文章归档',
+  description: 'A list of all the years of creating my posts',
   title: 'Archives'
 }
 ---

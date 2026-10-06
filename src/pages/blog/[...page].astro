@@ -30,10 +30,7 @@ interface Props {
 const { page, uniqueTags, collectionsCount } = Astro.props
 
 const meta = {
-  description:
-    getLocale(Astro.url) === 'en'
-      ? 'Some posts or archives of my blog'
-      : '浏览 CTF Web 题解、网络安全实践与编程学习笔记',
+  description: 'Some posts or archives of my blog',
   title: 'Blog'
 }
 

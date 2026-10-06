@@ -33,10 +33,7 @@ const { page } = Astro.props
 const { tag } = Astro.params
 
 const meta = {
-  description:
-    getLocale(Astro.url) === 'en'
-      ? `View all posts with the tag - ${tag}`
-      : `浏览「${tag}」标签下的全部文章`,
+  description: `View all posts with the tag - ${tag}`,
   title: `Tag: ${tag}`
 }
 
