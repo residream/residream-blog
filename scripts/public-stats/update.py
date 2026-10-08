@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import re
 import tempfile
+import time
 from urllib.request import Request, urlopen
 
 
@@ -166,7 +167,7 @@ def fetch_source(source, request=get_json):
     return {key: {"value": value, "updatedAt": updated_at} for key, value in values.items()}
 
 
-def refresh(seeds, previous, fetch=fetch_source):
+def refresh(seeds, previous, fetch=fetch_source, sources=None):
     values = {}
     for key, seed in seeds.items():
         saved = previous.get(key)
@@ -174,7 +175,7 @@ def refresh(seeds, previous, fetch=fetch_source):
         if candidates:
             values[key] = max(candidates, key=lambda entry: date_value(entry["updatedAt"]))
 
-    sources = sorted({source_for(key) for key in seeds})
+    sources = sorted(sources if sources is not None else {source_for(key) for key in seeds})
     failures = []
     with ThreadPoolExecutor(max_workers=3) as pool:
         tasks = {pool.submit(fetch, source): source for source in sources}
@@ -193,8 +194,7 @@ def refresh(seeds, previous, fetch=fetch_source):
     return values, failures
 
 
-def write_snapshot(path, values):
-    payload = {"version": 1, "updatedAt": timestamp(), "values": values}
+def write_json(path, payload):
     temporary = None
     try:
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent, prefix=".stats-", delete=False) as file:
@@ -210,26 +210,74 @@ def write_snapshot(path, values):
             os.unlink(temporary)
 
 
+def write_snapshot(path, values):
+    write_json(path, {"version": 1, "updatedAt": timestamp(), "values": values})
+
+
+def read_seeds(output):
+    data = json.loads((output.parent / "sources.json").read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or not data or not all(
+        source_for(key) and (entry is None or valid_entry(entry)) for key, entry in data.items()
+    ):
+        raise ValueError("Invalid configured sources")
+    return data
+
+
+def refresh_saved(output, *, seeds=None, keys=None, force=False, wait=False, fetch=fetch_source, now=None):
+    """Share the daily job's cache and lock with on-demand refreshes."""
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.with_suffix(".lock").open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | (0 if force or wait else fcntl.LOCK_NB))
+        except BlockingIOError:
+            return read_snapshot(output), [], 0
+
+        if seeds is None:
+            seeds = read_seeds(output)
+        else:
+            write_json(output.parent / "sources.json", seeds)
+        previous = read_snapshot(output)
+        requested = set(seeds) if keys is None else set(keys)
+        if not requested.issubset(seeds):
+            raise ValueError("Unconfigured statistic")
+        sources = {source_for(key) for key in requested}
+        checks_path = output.parent / "checks.json"
+        checks = json.loads(checks_path.read_text()) if checks_path.exists() else {}
+        now = time.time() if now is None else now
+        due = set()
+        for source in sources:
+            check = checks.get(source, {})
+            latest = max((date_value(entry["updatedAt"]) for key, entry in previous.items()
+                          if source_for(key) == source), default=0)
+            checked = check.get("at", latest)
+            interval = 3600 if check.get("ok", True) else 600
+            if force or now - checked >= interval or checked > now:
+                due.add(source)
+                # A failed or interrupted request must also have a cooldown.
+                checks[source] = {"at": now, "ok": False}
+        if not due:
+            return previous, [], 0
+        write_json(checks_path, checks)
+        values, failures = refresh(seeds, previous, fetch=fetch, sources=due)
+        for source in due:
+            checks[source] = {"at": now, "ok": source not in failures}
+        if values != previous or not output.exists():
+            write_snapshot(output, values)
+        write_json(checks_path, checks)
+        return values, failures, len(due)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--web-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    with args.output.with_suffix(".lock").open("a") as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            print("An update is already running")
-            return 0
-        previous = read_snapshot(args.output)
-        seeds = discover(args.web_root)
-        values, failures = refresh(seeds, previous)
-        if values != previous or not args.output.exists():
-            write_snapshot(args.output, values)
-        total = len({source_for(key) for key in seeds})
-        print(f"Public statistics: {total - len(failures)}/{total} sources refreshed; {len(values)} values available", flush=True)
-        return 1 if len(failures) == total else 0
+    values, failures, total = refresh_saved(args.output, seeds=discover(args.web_root), force=True)
+    print(f"Public statistics: {total - len(failures)}/{total} sources refreshed; {len(values)} values available", flush=True)
+    from chart import refresh_chart
+    refresh_chart(args.output.parent, seed=args.web_root / "data/github-contributions.svg", force=True)
+    return 1 if total and len(failures) == total else 0
 
 
 if __name__ == "__main__":

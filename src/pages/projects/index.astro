@@ -1,4 +1,7 @@
 ---
+import { createHash } from 'node:crypto'
+import { readFile } from 'node:fs/promises'
+
 import { Button, Collapse, Icon } from 'astro-pure/user'
 import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
@@ -6,6 +9,9 @@ import Sponsorship from '@/components/projects/Sponsorship.astro'
 import { getLocale } from '@/utils/i18n'
 import alipay from '@/assets/alipay-qrcode.jpg'
 import wechat from '@/assets/wechat-qrcode.jpg'
+
+const chart = await readFile('public/data/github-contributions.svg')
+const chartVersion = createHash('sha256').update(chart).digest('hex')
 
 const headings = [
   { depth: 2, slug: 'projects', text: 'Projects' },
@@ -17,12 +23,14 @@ const headings = [
   <p>Github Activities:</p>
   <p>
     <img
-      src='https://ghchart.rshah.org/659eb9/residream'
+      src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(chart.toString('utf8'))}`}
+      data-contribution-chart
+      data-chart-version={chartVersion}
       alt='github activities'
       width='663'
       height='104'
       decoding='async'
-      loading='lazy'
+      loading='eager'
     />
   </p>
   <p>

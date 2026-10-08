@@ -47,24 +47,26 @@ draft: true
 
 构建时读取项目简介、Stars、Forks 和许可证，缓存 24 小时，直接写入页面。接口暂时不可用时沿用缓存，首次构建也可使用已保存的公开项目资料。构建缓存位于 `.astro/github-cards/`，不会提交到仓库。Stars、Forks 上线后还会通过下面的每日任务更新。
 
-## 每日公开数据更新
+## 公开数据与贡献图更新
 
-服务器每天北京时间 03:00 获取 GitHub 卡片的 Stars、Forks，以及 About 的 GitHub/Bilibili 粉丝数、Steam 游戏数和好友数。每个来源独立更新；超时、限流或无效响应时保留该项上次成功值，合法的 `0` 正常更新。部署后也会触发一次更新。
+服务器每天北京时间 03:00 获取 GitHub 卡片的 Stars、Forks、About 的 GitHub/Bilibili 粉丝数、Steam 游戏数和好友数，以及 Projects 的 GitHub 贡献图。每个来源独立更新；超时、限流或无效响应时保留该项上次成功值，合法的 `0` 正常更新。部署后也会触发一次更新。
 
-任务从已经发布的页面自动识别仓库和账号，新增卡片或修改 About 的账号后正常部署即可。GitHub 贡献图、评论和访问统计继续使用各自的更新方式。
+任务从已经发布的页面自动识别数字对应的仓库和账号，新增卡片或修改 About 的账号后正常部署即可。贡献图的账号与配色配置在 `scripts/public-stats/chart.py`；`public/data/github-contributions.svg` 是本地预览和首次安装的底图，日常更新不修改仓库文件。
 
-页面先显示构建时的数字，仅在有相关数字的页面请求一次 `/data/public-stats.json`。数据比页面旧或请求失败时继续保留页面已有数字，不影响页面加载。浏览器无需访问第三方统计 API。
+页面先显示已有数字，贡献图底图直接随 HTML 内嵌，首次打开也无需等待额外图片请求；后台再读取同站缓存并检查更新。有相关数字时先读取 `/data/public-stats.json`，再由 `/data/public-refresh.json` 检查当前页面用到的来源。访问触发的检查中，数字每个来源最多一小时一次，贡献图最多十分钟一次；失败后等待十分钟再尝试。并发访问复用缓存，不会重复请求同一来源。每日任务保留，作为无人访问时的预热。
 
-数据文件保存在服务器 `/var/lib/residream-public-stats/public-stats.json`，逐项记录成功更新时间，写完后整体替换。它位于网站发布目录之外，部署、回滚不会覆盖，也不提交 Git。任务无需额外依赖，运行结束即退出，内存上限 64 MiB。
+浏览器仅在贡献图内容不同时下载新版，完整解码成功后才替换；未变化、超时或图片损坏时保留原图。数字仅接受比页面更新的有效值，不添加加载动画，不改变现有布局。中英切换复用近期已获取的结果；离开页面再返回时，超过十分钟可再次检查。浏览器只访问同站接口，评论和访问统计继续使用各自的更新方式。
+
+数据保存在服务器 `/var/lib/residream-public-stats/`，数字和 SVG 均采用原子替换；部署、回滚不会覆盖，也不提交 Git。两个任务共用文件锁与刷新记录。每日任务运行结束即退出；按需刷新服务只监听 `127.0.0.1:8791`，由 Nginx 转发，最多四个并发请求，只接受已发布的数字和固定贡献图，不接受任意上游地址。两者均使用 Python 标准库，内存各限制为 64 MiB。
 
 服务文件位于 `scripts/public-stats/`，首次安装到服务器时：
 
-1. 创建系统用户 `residream-stats`，把 `update.py` 放入 `/opt/residream-public-stats/`，两个 systemd 文件放入 `/etc/systemd/system/`。
+1. 创建系统用户 `residream-stats`，把三个 `.py` 文件放入 `/opt/residream-public-stats/`，三个 systemd 文件放入 `/etc/systemd/system/`。
 2. 把 `nginx.conf` 放入 `/etc/nginx/snippets/residream-public-stats.conf`，在主站 `server` 中引用并验证配置后重新加载。
-3. 在 Cloudflare 添加仅匹配 `/data/public-stats.json` 的缓存规则，排在现有规则之后，边缘与浏览器缓存均遵循源站的 10 分钟缓存头。
-4. 重新加载 systemd 配置并启用 `residream-public-stats.timer`。首次发布带数据标记的页面后启动 `residream-public-stats.service`。
+3. 在 Cloudflare 让 `/data/public-stats.json` 和 `/data/github-contributions.svg` 遵循源站的 10 分钟缓存头并保留完整查询参数作为缓存键；`/data/public-refresh.json` 必须绕过缓存，并且不能被强制覆盖 `no-store`。
+4. 首次先把已验证的 `public/data/github-contributions.svg` 放到状态目录，并以 `residream-stats` 用户运行一次 `update.py`，生成数字缓存及来源清单。重新加载 systemd 配置并启用 `residream-public-stats.timer`、`residream-public-refresh.service`。
 
-现有服务器已按此方式配置。后续 `bun run deploy` 会同步采集脚本并触发更新；修改服务、定时器或 Nginx 配置时需单独同步对应文件。若调整 `WEB_ROOT`，同时调整服务文件的 `--web-root`。
+后续 `bun run deploy` 会同步三个 Python 文件、重启已安装的刷新服务并触发每日任务；修改服务、定时器或 Nginx 配置时需单独同步对应文件。若调整 `WEB_ROOT`，同时调整每日服务文件的 `--web-root`。
 
 维护时查看 `residream-public-stats.timer` 的下次运行时间，以及 `residream-public-stats.service` 的日志；日志会列出失败并沿用旧值的数据来源。
 

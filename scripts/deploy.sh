@@ -152,10 +152,12 @@ sync_public_stats() {
     warn "服务器尚未安装每日公开数据任务，安装说明见 scripts/README.md"
     return 0
   fi
-  rsync -az scripts/public-stats/update.py "$DEPLOY_HOST:${STAGE_DIR}-public-stats.py" || return
-  remote "sudo install -m 644 ~/'${STAGE_DIR}-public-stats.py' /opt/residream-public-stats/update.py.next &&
-    sudo mv /opt/residream-public-stats/update.py.next /opt/residream-public-stats/update.py &&
-    rm ~/'${STAGE_DIR}-public-stats.py' &&
+  rsync -az scripts/public-stats/{update,chart,server}.py "$DEPLOY_HOST:${STAGE_DIR}-public-stats/" || return
+  remote "sudo install -m 644 ~/'${STAGE_DIR}-public-stats/'*.py /opt/residream-public-stats/ &&
+    rm ~/'${STAGE_DIR}-public-stats/'*.py && rmdir ~/'${STAGE_DIR}-public-stats' &&
+    if sudo test -f /etc/systemd/system/residream-public-refresh.service; then
+      sudo systemctl restart residream-public-refresh.service
+    fi &&
     sudo systemctl start --no-block residream-public-stats.service"
 }
 

@@ -1,0 +1,27 @@
+[Unit]
+Description=Refresh cached public numbers and contribution chart on demand
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=residream-stats
+Group=residream-stats
+StateDirectory=residream-public-stats
+StateDirectoryMode=0755
+ExecStart=/usr/bin/python3 -B /opt/residream-public-stats/server.py --directory /var/lib/residream-public-stats
+Restart=on-failure
+RestartSec=5
+MemoryMax=64M
+TasksMax=32
+CPUQuota=25%
+UMask=0022
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target
