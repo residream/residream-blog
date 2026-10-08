@@ -76,6 +76,7 @@ await Promise.all(stats.map(fetchCount))
           </div>
           <div class='flex items-center gap-1.5'>
             <samp
+              class='rd-number'
               data-stat-key={api ? `account:${api}` : undefined}
               data-stat-value={count}
               data-stat-updated-at={updatedAt}

@@ -1,3 +1,13 @@
+.rd-number {
+  display: inline-block;
+  min-inline-size: var(--number-width, 4ch);
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+.rd-number[data-number-pending] {
+  opacity: 0.5;
+}
+
 /* [Animation] */
 @keyframes fade-in-up {
   0% {

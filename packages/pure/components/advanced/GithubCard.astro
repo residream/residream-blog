@@ -93,7 +93,7 @@ const numberFormat = Intl.NumberFormat('en-us', {
                 data-stat-value={data?.stars}
                 data-stat-updated-at={data?.updatedAt}
                 data-stat-format='compact'
-                class='text-sm leading-tight sm:text-base'
+                class='rd-number text-sm leading-tight sm:text-base'
                 title={data ? String(data.stars) : undefined}
               >
                 {data ? numberFormat.format(data.stars) : '—'}
@@ -127,7 +127,7 @@ const numberFormat = Intl.NumberFormat('en-us', {
                 data-stat-value={data?.forks}
                 data-stat-updated-at={data?.updatedAt}
                 data-stat-format='compact'
-                class='text-sm leading-tight sm:text-base'
+                class='rd-number text-sm leading-tight sm:text-base'
                 title={data ? String(data.forks) : undefined}
               >
                 {data ? numberFormat.format(data.forks) : '—'}

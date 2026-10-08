@@ -1,3 +1,5 @@
+import { setNumber } from './number-transition'
+
 type Stat = { value: number; updatedAt: string | null }
 type Snapshot = { version: 1; values: Record<string, Stat> }
 
@@ -44,8 +46,7 @@ function snapshotRequest(url: string, timeout: number) {
   return result
 }
 
-function applyValues(values: Record<string, Stat>) {
-  const compact = new Intl.NumberFormat('en-us', { notation: 'compact', maximumFractionDigits: 1 })
+function applyValues(values: Record<string, Stat>, animate = true) {
   for (const element of document.querySelectorAll<HTMLElement>('[data-stat-key]')) {
     const key = element.dataset.statKey!
     const entry = values[key]
@@ -55,9 +56,7 @@ function applyValues(values: Record<string, Stat>) {
     if (receivedAt < renderedAt || (!receivedAt && element.dataset.statValue !== undefined))
       continue
 
-    const text =
-      element.dataset.statFormat === 'compact' ? compact.format(entry.value) : String(entry.value)
-    if (element.textContent !== text) element.textContent = text
+    setNumber(element, entry.value, animate)
     element.title = String(entry.value)
     element.dataset.statValue = String(entry.value)
     if (entry.updatedAt) element.dataset.statUpdatedAt = entry.updatedAt
@@ -75,7 +74,7 @@ async function updateNumbers() {
     )
   ].sort()
   if (!keys.length) return
-  applyValues(latest)
+  applyValues(latest, false)
 
   const cachedUrl = '/data/public-stats.json'
   const cached = await snapshotRequest(cachedUrl, 5000)

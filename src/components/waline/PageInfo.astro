@@ -15,13 +15,34 @@ const path = withoutLocale(Astro.url.pathname)
 ---
 
 <div class={cn('text-base text-sm text-muted-foreground', className)} {...props}>
-  <span class='waline-pageview-count' data-path={path}></span> views
+  <span data-page-count='views' data-language-preserve>
+    <span class='waline-pageview-count' data-path={path} data-count-source hidden aria-hidden='true'
+    ></span><span class='rd-number' data-count-value data-number-pending>—</span>
+  </span> views
   {
     comment && (
       <>
         {' | '}
         <a href='#waline'>
-          <span class='waline-comment-count' data-path={path} /> comments
+          <span data-page-count='comments' data-language-preserve>
+            <span
+              class='waline-comment-count'
+              data-path={path}
+              data-count-source
+              hidden
+              aria-hidden='true'
+            />
+            <span
+              class='rd-number'
+              data-count-value
+              data-number-pending
+              data-number-digits='2'
+              style='--number-width:2ch'
+            >
+              —
+            </span>
+          </span>{' '}
+          comments
         </a>
       </>
     )
@@ -29,3 +50,7 @@ const path = withoutLocale(Astro.url.pathname)
 </div>
 
 {view && !comment && <Pageview />}
+
+<script>
+  import '../../scripts/page-counts'
+</script>
