@@ -7,6 +7,7 @@ import test from 'node:test'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import sharp from 'sharp'
 
+import { purge, purgeUrls } from './deploy-cache.mjs'
 import { preparePost, readMarkdown, writePreparedPost } from './import-post.mjs'
 
 const project = fileURLToPath(new URL('..', import.meta.url))
@@ -270,12 +271,20 @@ test('deploy CLI previews without SSH or git changes, then imports locally and s
   assert.equal(git('rev-list', '--count', 'HEAD'), '2')
 })
 
-test('deployment completes on system Bash with mocked upload, backup, verification and cache purge', async (t) => {
+test('deployment and cache recovery use isolated remote fixtures on system Bash', async (t) => {
   const f = await fixture(t)
-  await put(
-    path.join(f.repoRoot, 'scripts/deploy.sh'),
-    await fs.readFile(path.join(project, 'scripts/deploy.sh'))
-  )
+  for (const script of ['deploy.sh', 'deploy-remote.py', 'deploy-cache.mjs']) {
+    await put(
+      path.join(f.repoRoot, 'scripts', script),
+      await fs.readFile(path.join(project, 'scripts', script))
+    )
+  }
+  for (const script of ['update.py', 'chart.py', 'server.py']) {
+    await put(
+      path.join(f.repoRoot, 'scripts/public-stats', script),
+      await fs.readFile(path.join(project, 'scripts/public-stats', script))
+    )
+  }
   await put(path.join(f.repoRoot, '.gitignore'), 'dist/\n')
   const git = (...args) => execFileSync('git', args, { cwd: f.repoRoot, encoding: 'utf8' }).trim()
   git('init', '-q')
@@ -283,47 +292,82 @@ test('deployment completes on system Bash with mocked upload, backup, verificati
   git('config', 'user.email', 'deploy-test@example.invalid')
   git('add', '.')
   git('commit', '-qm', 'fixture')
-  await put(path.join(f.repoRoot, 'dist/index.html'), '<script id="counterscale-script"></script>')
-  await put(path.join(f.repoRoot, 'dist/404.html'), 'not found')
-  await put(path.join(f.repoRoot, 'dist/blog/example/index.html'), 'article')
+  const oldHome = '<script id="counterscale-script"></script>old'
+  const newHome = '<script id="counterscale-script"></script>new'
+  const webRoot = path.join(f.root, 'live')
+  for (const [name, text] of Object.entries({
+    'index.html': oldHome,
+    '404.html': 'not found',
+    'blog/example/index.html': 'article'
+  })) {
+    await put(path.join(webRoot, name), text)
+    await put(path.join(f.repoRoot, 'dist', name), name === 'index.html' ? newHome : text)
+  }
+  // Same size and mtime: the final publish must still replace the content.
+  const stamp = new Date('2026-01-01T00:00:00Z')
+  await fs.utimes(path.join(webRoot, 'index.html'), stamp, stamp)
+  await fs.utimes(path.join(f.repoRoot, 'dist/index.html'), stamp, stamp)
   const bin = path.join(f.root, 'bin')
   const log = path.join(f.root, 'remote.log')
-  const webRoot = path.join(f.root, 'live')
-  await put(path.join(webRoot, 'blog/example/index.html'), 'live article')
+  await fs.mkdir(path.join(f.root, 'stats'))
+  await put(path.join(f.root, 'refresh.service'), 'fixture unit')
+  const realRsync = execFileSync('which', ['rsync'], { encoding: 'utf8' }).trim()
+  const realBun = execFileSync('which', ['bun'], { encoding: 'utf8' }).trim()
+  const fetchMock = await put(
+    path.join(f.root, 'fetch-mock.mjs'),
+    `
+import fs from 'node:fs';
+globalThis.fetch = async (url, options) => {
+  if (url !== 'https://api.cloudflare.com/client/v4/zones/fixture-zone/purge_cache') throw new Error('Unexpected network request');
+  fs.appendFileSync(process.env.DEPLOY_TEST_LOG, 'purge ' + options.body + '\\n');
+  return Response.json({ success: process.env.DEPLOY_TEST_CF_FAIL !== '1' }, { status: process.env.DEPLOY_TEST_CF_FAIL === '1' ? 403 : 200 });
+};
+`
+  )
   const stubs = {
-    ssh: `#!/bin/sh
-if [ "$DEPLOY_TEST_SSH_FAIL" = 1 ]; then exit 1; fi
+    ssh: `#!/bin/bash
+[ "$DEPLOY_TEST_SSH_FAIL" != 1 ] || exit 255
+while [ "$#" -gt 0 ]; do
+  case "$1" in -n) shift ;; -o) shift 2 ;; *) shift; break ;; esac
+done
 printf 'ssh %s\\n' "$*" >> "$DEPLOY_TEST_LOG"
 case "$*" in
-  *"bash -s"*)
-    script="$(cat)"
-    printf '%s\\n' "$script" >> "$DEPLOY_TEST_LOG"
-    case "$script" in *'code()'*) printf '%s\\n' "$script" | /bin/bash -s || exit "$?" ;; esac
-    ;;
-  *"tee "*) cat >> "$DEPLOY_TEST_LOG" ;;
+  *mktemp*) mktemp -d "$DEPLOY_TEST_ROOT/blog-stage.XXXXXX" ;;
+  *'sudo -n true && if'*) if [ "$DEPLOY_TEST_STATS" = 1 ]; then printf 'yes\\n'; else printf 'no\\n'; fi ;;
+  *) command="$(printf '%s' "$*" | sed "s|/opt/residream-public-stats/|$DEPLOY_TEST_ROOT/stats/|g" | sed "s|/etc/systemd/system/residream-public-refresh.service|$DEPLOY_TEST_ROOT/refresh.service|g")"
+     /bin/bash -c "$command" ;;
 esac
 `,
-    rsync: `#!/bin/sh
-printf 'rsync %s\\n' "$*" >> "$DEPLOY_TEST_LOG"
-case "$*" in *--itemize-changes*) printf '>f+++++++++ index.html\\n' ;; esac
+    sudo: `#!/bin/sh
+[ "$1" != -n ] || shift
+exec "$@"
+`,
+    security: `#!/bin/sh
+exit 1
+`,
+    systemctl: `#!/bin/sh
+printf 'systemctl %s\\n' "$*" >> "$DEPLOY_TEST_LOG"
+`,
+    rsync: `#!/bin/bash
+args=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in -e) shift 2 ;; *) args+=("\${1#fixture.invalid:}"); shift ;; esac
+done
+exec '${realRsync}' "\${args[@]}"
+`,
+    bun: `#!/bin/sh
+if [ "$1" = scripts/deploy-cache.mjs ]; then exec node --import "$DEPLOY_TEST_FETCH_MOCK" "$@"; fi
+exec '${realBun}' "$@"
 `,
     curl: `#!/bin/sh
-case "$*" in
-  *api.cloudflare.com*) ;;
-  *)
-    for arg in "$@"; do url="$arg"; done
-    printf 'GET %s\\n' "$url" >> "$DEPLOY_TEST_LOG"
-    case "$url" in
-      */this-page-does-not-exist) printf 404 ;;
-      */index.php/archive/) printf 301 ;;
-      */blog/example|https://example.invalid/) printf 200 ;;
-      *) printf 404 ;;
-    esac
-    exit 0
-    ;;
+for arg in "$@"; do url="$arg"; done
+printf 'GET %s\\n' "$url" >> "$DEPLOY_TEST_LOG"
+if [ "$DEPLOY_TEST_ORIGIN_FAIL" = 1 ]; then printf 503; exit 0; fi
+case "$url" in
+  */this-page-does-not-exist) printf 404 ;;
+  */index.php/archive/) printf 301 ;;
+  *) printf 200 ;;
 esac
-printf 'purge\\n' >> "$DEPLOY_TEST_LOG"
-printf '{"success":true}'
 `
   }
   for (const [name, script] of Object.entries(stubs)) {
@@ -340,34 +384,232 @@ printf '{"success":true}'
     CF_API_TOKEN: 'fixture-token',
     CF_ZONE_ID: 'fixture-zone',
     DEPLOY_TEST_LOG: log,
+    DEPLOY_TEST_ROOT: f.root,
+    DEPLOY_TEST_FETCH_MOCK: fetchMock,
     DEPLOY_TEST_SSH_FAIL: '0',
-    LANG: 'en_US.UTF-8',
-    LC_ALL: 'en_US.UTF-8'
+    DEPLOY_TEST_CF_FAIL: '0',
+    DEPLOY_TEST_ORIGIN_FAIL: '0'
   }
   const run = (args, overrides = {}) =>
     spawnSync('/bin/bash', ['scripts/deploy.sh', ...args], {
       cwd: f.repoRoot,
       encoding: 'utf8',
-      env: { ...env, ...overrides }
+      env: { ...env, ...overrides },
+      timeout: 30000
     })
   const flags = ['--skip-build', '--yes']
+  const preview = run(['--skip-build', '--dry-run'])
+  assert.equal(preview.status, 0, preview.stdout + preview.stderr)
+  assert.equal(await fs.readFile(path.join(webRoot, 'index.html'), 'utf8'), oldHome)
+  await assert.rejects(fs.stat(webRoot + '.deploy'), { code: 'ENOENT' })
+  assert.doesNotMatch(await fs.readFile(log, 'utf8'), /purge /)
   const published = run(flags)
-  assert.equal(published.status, 0, published.stderr)
-  assert.ok(published.stdout.includes(`发布到 ${webRoot}（当前线上版本备份到 ${webRoot}.prev）`))
+  assert.equal(published.status, 0, published.stdout + published.stderr)
+  assert.equal(await fs.readFile(path.join(webRoot, 'index.html'), 'utf8'), newHome)
+  assert.equal(await fs.readFile(path.join(webRoot + '.prev', 'index.html'), 'utf8'), oldHome)
   assert.match(published.stdout, /已发布：/)
   const calls = await fs.readFile(log, 'utf8')
-  assert.ok(calls.includes(`sudo rsync -a --delete '${webRoot}/' '${webRoot}.prev/'`))
-  assert.match(calls, /GET https:\/\/example.invalid\//)
   assert.match(calls, /GET https:\/\/example.invalid\/blog\/example/)
-  assert.match(calls, /purge/)
+  assert.match(calls, /purge .*"files"/)
+  assert.doesNotMatch(calls, /purge_everything/)
+  const repeated = run(flags)
+  assert.equal(repeated.status, 0, repeated.stdout + repeated.stderr)
+  assert.match(repeated.stdout, /线上页面已经是这个版本/)
+  await put(path.join(f.repoRoot, 'dist/about/index.html'), 'about')
+  const failedPurge = run(flags, { DEPLOY_TEST_CF_FAIL: '1' })
+  assert.equal(failedPurge.status, 1, failedPurge.stdout + failedPurge.stderr)
+  assert.equal(await fs.readFile(path.join(webRoot, 'about/index.html'), 'utf8'), 'about')
+  assert.equal((await fs.readdir(path.join(webRoot + '.deploy', 'purge'))).length, 1)
+  const recovered = run(flags)
+  assert.equal(recovered.status, 0, recovered.stdout + recovered.stderr)
+  assert.match(recovered.stdout, /线上页面已经是这个版本/)
+  assert.match(recovered.stdout, /已按 URL 清理 3 项缓存/)
+  assert.deepEqual(await fs.readdir(path.join(webRoot + '.deploy', 'purge')), [])
+  const failedOrigin = run(flags, { DEPLOY_TEST_ORIGIN_FAIL: '1' })
+  assert.equal(failedOrigin.status, 0, 'unchanged content does not republish')
+  await put(path.join(f.repoRoot, 'dist/about/index.html'), 'broken version')
+  const restored = run(flags, { DEPLOY_TEST_ORIGIN_FAIL: '1' })
+  assert.equal(restored.status, 1, restored.stdout + restored.stderr)
+  assert.match(restored.stdout, /已恢复发布前的文件/)
+  assert.equal(await fs.readFile(path.join(webRoot, 'about/index.html'), 'utf8'), 'about')
+  await put(path.join(f.repoRoot, 'dist/about/index.html'), 'second version')
+  assert.equal(run(flags).status, 0)
+  const rollback = run(['--rollback', '--yes'])
+  assert.equal(rollback.status, 0, rollback.stdout + rollback.stderr)
+  assert.equal(await fs.readFile(path.join(webRoot, 'about/index.html'), 'utf8'), 'about')
+  const only = run(['--purge-only'])
+  assert.equal(only.status, 0, only.stdout + only.stderr)
+  assert.match(only.stdout, /没有待清理的缓存/)
+  const full = run(['--purge-only', '--purge-all', '--yes'])
+  assert.equal(full.status, 0, full.stdout + full.stderr)
+  assert.match(await fs.readFile(log, 'utf8'), /purge_everything/)
+  assert.equal(run(['--purge-only', '--rollback']).status, 2)
+  assert.equal(run(['--purge-only', '--dry-run']).status, 2)
+  for (const root of ['/', '//', '/var/www', '/var/www//blog', '/etc', '/srv/blog/.']) {
+    const unsafe = run(flags, { WEB_ROOT: root })
+    assert.equal(unsafe.status, 1)
+    assert.match(unsafe.stderr, /WEB_ROOT/)
+    assert.doesNotMatch(unsafe.stdout, /检查 SSH/)
+  }
   await put(path.join(f.repoRoot, 'uncommitted.txt'), 'local change')
   const dirty = run([...flags, '--allow-dirty'])
-  assert.equal(dirty.status, 0, dirty.stderr)
+  assert.equal(dirty.status, 0, dirty.stdout + dirty.stderr)
   assert.match(dirty.stdout, /（含未提交改动）/)
   const unknown = run(['--unknown'])
   assert.equal(unknown.status, 2)
-  assert.match(unknown.stderr, /未知参数：--unknown（见 --help）/)
   const offline = run([...flags, '--allow-dirty'], { DEPLOY_TEST_SSH_FAIL: '1' })
   assert.equal(offline.status, 1)
   assert.match(offline.stderr, /无法登录 fixture.invalid。/)
+  const restarts = async () =>
+    (await fs.readFile(log, 'utf8')).match(/^systemctl restart /gm)?.length ?? 0
+  const synced = run([...flags, '--allow-dirty'], { DEPLOY_TEST_STATS: '1' })
+  assert.equal(synced.status, 0, synced.stdout + synced.stderr)
+  assert.equal(await restarts(), 1)
+  for (const name of ['update.py', 'chart.py', 'server.py']) {
+    assert.deepEqual(
+      await fs.readFile(path.join(f.root, 'stats', name)),
+      await fs.readFile(path.join(f.repoRoot, 'scripts/public-stats', name))
+    )
+  }
+  const sameScripts = run([...flags, '--allow-dirty'], { DEPLOY_TEST_STATS: '1' })
+  assert.equal(sameScripts.status, 0, sameScripts.stdout + sameScripts.stderr)
+  assert.equal(await restarts(), 1, 'unchanged task scripts must not restart the service')
+  assert.ok((await fs.readdir(f.root)).every((name) => !name.startsWith('blog-stage.')))
+})
+
+test('cache targets cover both languages, deleted pages, encoded assets and page aliases', () => {
+  const urls = purgeUrls('example.invalid', [
+    {
+      paths: [
+        'index.html',
+        'about/index.html',
+        'en/about/index.html',
+        'removed/index.html',
+        'images/中文 #1.png',
+        'rss.xml',
+        'about/index.html'
+      ]
+    }
+  ])
+  for (const url of [
+    '/',
+    '/index.html',
+    '/about',
+    '/about/',
+    '/about/index.html',
+    '/en/about',
+    '/removed',
+    '/rss.xml',
+    '/images/%E4%B8%AD%E6%96%87%20%231.png'
+  ]) {
+    assert.ok(urls.includes('https://example.invalid' + url), url)
+  }
+  assert.equal(urls.length, new Set(urls).size)
+  assert.throws(() => purgeUrls('https://bad', []))
+  assert.throws(() => purgeUrls('example.invalid', [{ paths: ['../outside'] }]))
+})
+
+test('independent data and new Astro resources are excluded, but reused asset names remain covered', () => {
+  const paths = [
+    'data/public-stats.json',
+    'data/github-contributions.svg',
+    '.release',
+    '_astro/new-hash.js',
+    '_astro/reused.js',
+    'pagefind/pagefind.js'
+  ]
+  assert.deepEqual(purgeUrls('example.invalid', [{ paths, added: ['_astro/new-hash.js'] }]), [
+    'https://example.invalid/_astro/reused.js',
+    'https://example.invalid/pagefind/pagefind.js'
+  ])
+})
+
+test('cache requests are deduplicated and batched, and full-zone purge requires its explicit option', async () => {
+  const bodies = []
+  const options = {
+    host: 'example.invalid',
+    token: 'fixture-token',
+    zone: 'fixture-zone',
+    sleep: async () => {},
+    fetchImpl: async (_url, options) => {
+      bodies.push(JSON.parse(options.body))
+      assert.ok(options.signal instanceof AbortSignal)
+      return new Response('{ "success": true }', { status: 200 })
+    }
+  }
+  const batches = [{ paths: Array.from({ length: 205 }, (_, i) => `images/${i}.svg`) }]
+  assert.equal(await purge({ ...options, batches }), 205)
+  assert.deepEqual(
+    bodies.map((body) => body.files.length),
+    [100, 100, 5]
+  )
+  assert.ok(bodies.every((body) => !('purge_everything' in body)))
+  bodies.length = 0
+  await purge({ ...options, batches: [], all: true })
+  assert.deepEqual(bodies, [{ purge_everything: true }])
+})
+
+test('transient cache errors retry with a bound, while rejected credentials stop immediately', async () => {
+  const options = {
+    host: 'example.invalid',
+    token: 'fixture-token',
+    zone: 'fixture-zone',
+    batches: [{ paths: ['index.html'] }]
+  }
+  const waits = []
+  let calls = 0
+  await purge({
+    ...options,
+    sleep: async (delay) => waits.push(delay),
+    fetchImpl: async () => {
+      const status = [500, 429, 200][calls++]
+      return Response.json({ success: status === 200 }, { status, headers: { 'retry-after': '2' } })
+    }
+  })
+  assert.equal(calls, 3)
+  assert.deepEqual(waits, [2000, 2000])
+  calls = 0
+  await assert.rejects(
+    purge({
+      ...options,
+      sleep: async () => {},
+      fetchImpl: async () => {
+        calls++
+        return Response.json(
+          { success: false, errors: [{ code: 9109, message: 'do not echo this' }] },
+          { status: 403 }
+        )
+      }
+    }),
+    /HTTP 403，错误码 9109/
+  )
+  assert.equal(calls, 1)
+  calls = 0
+  await assert.rejects(
+    purge({
+      ...options,
+      sleep: async () => {},
+      fetchImpl: async () => {
+        calls++
+        throw new Error('offline')
+      }
+    }),
+    /请求失败、超时或响应无效/
+  )
+  assert.equal(calls, 3)
+})
+
+test('an empty cache queue needs no token, but outstanding work must not be reported as complete', async () => {
+  assert.equal(
+    await purge({
+      host: 'example.invalid',
+      batches: [],
+      fetchImpl: async () => assert.fail('unexpected network request')
+    }),
+    0
+  )
+  await assert.rejects(
+    purge({ host: 'example.invalid', batches: [{ paths: ['index.html'] }] }),
+    /未配置/
+  )
 })

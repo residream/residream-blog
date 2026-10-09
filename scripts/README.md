@@ -66,7 +66,7 @@ draft: true
 3. 在 Cloudflare 让 `/data/public-stats.json` 和 `/data/github-contributions.svg` 遵循源站的 10 分钟缓存头并保留完整查询参数作为缓存键；`/data/public-refresh.json` 必须绕过缓存，并且不能被强制覆盖 `no-store`。
 4. 首次先把已验证的 `public/data/github-contributions.svg` 放到状态目录，并以 `residream-stats` 用户运行一次 `update.py`，生成数字缓存及来源清单。重新加载 systemd 配置并启用 `residream-public-stats.timer`、`residream-public-refresh.service`。
 
-后续 `bun run deploy` 会同步三个 Python 文件、重启已安装的刷新服务并触发每日任务；修改服务、定时器或 Nginx 配置时需单独同步对应文件。若调整 `WEB_ROOT`，同时调整每日服务文件的 `--web-root`。
+后续 `bun run deploy` 会检查三个 Python 文件，内容变化时更新并重启已安装的刷新服务，随后触发每日任务；修改服务、定时器或 Nginx 配置时需单独同步对应文件。若调整 `WEB_ROOT`，同时调整每日服务文件的 `--web-root`。
 
 维护时查看 `residream-public-stats.timer` 的下次运行时间，以及 `residream-public-stats.service` 的日志；日志会列出失败并沿用旧值的数据来源。
 
@@ -110,13 +110,33 @@ bun run deploy --dry-run
 bun run deploy --rollback
 ```
 
-回滚会直接检查服务器上恢复的页面，不需要本地构建产物。恢复成功后即使自检失败，也会继续清理缓存并报告错误。
+回滚会直接检查服务器上恢复的页面，不需要本地构建产物。发布与回滚都会先完整备份、按内容校验同步，再检查源站；写入或自检失败时恢复操作前的文件，并保留待清缓存清单。服务器需有 Python 3.9+、rsync、curl 和免交互 sudo。
+
+## 发布与缓存清理
+
+默认比较构建产物与线上文件的实际内容，只清理新增、修改、删除文件对应的 URL。修改公共布局或样式导致多个 HTML 变化时，这些页面也会自动纳入；只有时间戳或权限变化不算内容更新。页面同时处理 `/about`、`/about/`、`/about/index.html` 这样的访问形式，以及英文页面。图片、RSS、搜索索引等固定地址的文件也包含在内；新增的 `_astro/` 构建资源使用新地址，不额外清缓存。
+
+每日公开数字与贡献图继续使用独立的缓存和刷新周期。默认清理只针对 `SITE_HOST`，不影响其他子域名；查询参数、自定义缓存键或额外域名不自动展开，调整 Cloudflare 缓存规则时需同时核对这些情况。URL 清理要求缓存规则也能匹配清理请求，详见 [Cloudflare 的说明](https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-single-file/)。
+
+Cloudflare 请求每批最多 100 个 URL，有超时和有限重试。失败时退出码非零，已发布的页面保留；未完成清单保存在服务器 `${WEB_ROOT}.deploy/`，后续部署即使没有页面变化也会补做清理，或单独运行：
+
+```sh
+# 不构建、不上传，只重试待清缓存
+bun run deploy --purge-only
+
+# 仅在确实需要时清整个 Zone，包括同区其他子域名
+bun run deploy --purge-only --purge-all
+```
+
+每次上传使用独立临时目录，并从当前线上文件预填充，以保持增量上传。服务器文件锁阻止两个发布或回滚同时修改线上目录。`${WEB_ROOT}.prev/` 保留上一版，`${WEB_ROOT}.deploy/` 保存锁、中断恢复信息及待清缓存任务；正常结束会清理本次上传和临时备份。强制终止后如仍有中断标记，先运行 `bun run deploy --rollback` 恢复，再重试。
+
+发布仍使用文件同步，不是整个目录的原子切换；同步期间可能有短暂的新旧文件交接。新增的是失败恢复与内容校验，不承诺零中断。`--skip-build` 仍表示使用已有产物，请确认 `dist/` 对应要发布的版本。
 
 导入不会改动 Blog 中的源 Markdown；如果直接传入仓库内的文章，则原地更新。重复导入相同内容会跳过提交，也不会删除原有附件或图片。仓库有其他未提交改动时默认停止；确实希望一起构建时可加 `--allow-dirty`。部署会创建文章的本地 Git 提交，不会自动推送远端。
 
 服务器与 Cloudflare 配置继续使用 `.deploy.env`，参考项目根目录的 `.deploy.env.example`。本地导入预览无需配置 `DEPLOY_HOST`。
 
-维护脚本后可运行 `bun run test:deploy`，检查图片查找、取色、占位符、重复导入和本地部署流程。
+维护脚本后可运行 `bun run test:deploy`，检查图片查找、取色、占位符、重复导入、隔离环境中的发布与回滚、缓存失败重试。测试需要本机有 Python 3.9+、Node.js、Bun、Git 和 rsync；SSH、源站请求及 Cloudflare 接口均使用模拟实现，不连接真实服务器。
 
 主题源码通过 Bun workspace 直接引用 `packages/pure/`。首次安装或拉取依赖配置变更后运行一次 `bun install`，之后修改主题即可直接构建，无需同步依赖目录中的副本。
 

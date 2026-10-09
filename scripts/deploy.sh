@@ -11,12 +11,14 @@ usage() {
   --rollback     回滚线上版本
   --skip-build   使用现有 dist/
   --allow-dirty  允许未提交的改动
+  --purge-only   只重试尚未完成的缓存清理
+  --purge-all    显式清理整个 Cloudflare Zone 的缓存
   --yes          跳过确认
 详细说明：scripts/README.md
 HELP
 }
 
-POST="" SLUG="" DRY_RUN=0 ROLLBACK=0 SKIP_BUILD=0 ALLOW_DIRTY=0 IMPORT_ONLY=0 YES=0
+POST="" SLUG="" DRY_RUN=0 ROLLBACK=0 SKIP_BUILD=0 ALLOW_DIRTY=0 IMPORT_ONLY=0 YES=0 PURGE_ONLY=0 PURGE_ALL=0
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=1 ;;
@@ -25,6 +27,8 @@ for arg in "$@"; do
     --allow-dirty) ALLOW_DIRTY=1 ;;
     --import-only) IMPORT_ONLY=1 ;;
     --yes) YES=1 ;;
+    --purge-only) PURGE_ONLY=1 ;;
+    --purge-all) PURGE_ALL=1 ;;
     --slug=*) SLUG="${arg#--slug=}" ;;
     -h | --help) usage; exit 0 ;;
     -*) echo "未知参数：${arg}（见 --help）" >&2; exit 2 ;;
@@ -44,6 +48,12 @@ if [ "$ROLLBACK" = 1 ] && [ "$DRY_RUN$SKIP_BUILD" != 00 ]; then
   echo "--rollback 不能与 --dry-run 或 --skip-build 同时使用" >&2; exit 2
 fi
 if [ -n "$SLUG" ] && [ -z "$POST" ]; then echo "--slug 需要一篇 md" >&2; exit 2; fi
+if [ "$PURGE_ONLY" = 1 ] && { [ -n "$POST" ] || [ "$DRY_RUN$ROLLBACK$SKIP_BUILD$IMPORT_ONLY" != 0000 ]; }; then
+  echo "--purge-only 不能与文章、预览、构建或回滚选项同时使用" >&2; exit 2
+fi
+if [ "$PURGE_ALL" = 1 ] && { [ "$IMPORT_ONLY" = 1 ] || { [ -n "$POST" ] && [ "$DRY_RUN" = 1 ]; }; }; then
+  echo "本地导入不需要 --purge-all" >&2; exit 2
+fi
 cd "$(dirname "$0")/.."
 
 if [ -f .deploy.env ]; then
@@ -52,15 +62,32 @@ if [ -f .deploy.env ]; then
 fi
 SITE_HOST="${SITE_HOST:-residream.com}"
 WEB_ROOT="${WEB_ROOT:-/var/www/residream-blog}"
+WEB_ROOT="${WEB_ROOT%/}"
 STAGE_DIR="${STAGE_DIR:-residream-blog-dist}" # 相对远端用户主目录
 IMAGE_DIRS="${IMAGE_DIRS:-}"
 BLOG_DIR=src/content/blog
+RUN_DIR="" REMOTE_STAGE=""
 
 step() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 warn() { printf '\033[33m注意：\033[0m%s\n' "$*" >&2; }
 die() { printf '\033[31m错误：\033[0m%s\n' "$*" >&2; exit 1; }
-remote() { ssh -n -o BatchMode=yes -o ConnectTimeout=10 "$DEPLOY_HOST" "$@"; }
-remote_in() { ssh -o BatchMode=yes -o ConnectTimeout=10 "$DEPLOY_HOST" "$@"; }
+SSH_OPTIONS=(-o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
+remote() { ssh -n "${SSH_OPTIONS[@]}" "$DEPLOY_HOST" "$@"; }
+remote_in() { ssh "${SSH_OPTIONS[@]}" "$DEPLOY_HOST" "$@"; }
+remote_tool() {
+  local mode="$1" args="" value
+  shift
+  for value in "$@"; do printf -v value '%q' "$value"; args="$args $value"; done
+  remote_in "sudo -n python3 - '$mode' '$WEB_ROOT' '$SITE_HOST'$args" < scripts/deploy-remote.py
+}
+cleanup() {
+  if [ -n "$REMOTE_STAGE" ]; then remote "rm -rf -- '$REMOTE_STAGE'" >/dev/null 2>&1 || warn "未能清理本次上传目录：$REMOTE_STAGE"; fi
+  [ -z "$RUN_DIR" ] || rm -rf -- "$RUN_DIR"
+  [ -z "${IMPORT_STAGE:-}" ] || rm -rf -- "$IMPORT_STAGE"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM HUP
 
 ask() {
   local reply=""
@@ -82,7 +109,6 @@ confirm() {
 prepare_post() {
   step "检查 Markdown、图片和主题色"
   IMPORT_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/residream-import.XXXXXX")"
-  trap 'rm -rf -- "$IMPORT_STAGE"' EXIT
   IMAGE_DIRS="$IMAGE_DIRS" bun scripts/import-post.mjs prepare "$POST" "$IMPORT_STAGE" "--slug=$SLUG"
   SLUG="$(bun -e 'console.log((await Bun.file(process.argv[1]).json()).slug)' "$IMPORT_STAGE/plan.json")"
 }
@@ -103,71 +129,57 @@ import_post() {
   fi
 }
 
-# 直接检查源站，绕过 Cloudflare。
-verify() {
-  remote_in bash -s <<EOF
-set -e
-code() { curl -s --connect-timeout 10 --max-time 30 -o /dev/null -w '%{http_code}' --resolve '$SITE_HOST:443:127.0.0.1' "https://$SITE_HOST\$1"; }
-fail=0
-check() { got=\$(code "\$1") || got=000; printf '  %-40s %s\n' "\$1" "\$got"; [ "\$got" = "\$2" ] || fail=1; }
-check / 200
-sample=/blog
-for file in '$WEB_ROOT'/blog/*/index.html; do
-  [ -f "\$file" ] || continue
-  slug=\${file%/index.html}
-  slug=\${slug##*/}
-  case "\$slug" in [0-9]*) continue ;; esac
-  sample="/blog/\$slug"
-  break
-done
-check "\$sample" 200
-check /this-page-does-not-exist 404
-check /index.php/archive/ 301
-[ -f '$WEB_ROOT/.release' ] && printf '  线上版本：%s\n' "\$(cat '$WEB_ROOT/.release')"
-exit \$fail
-EOF
-}
-
 purge_cache() {
-  local token="${CF_API_TOKEN:-}" resp
+  local token="${CF_API_TOKEN:-}" mode=changed ids=() id
+  remote_tool pending > "$RUN_DIR/pending.json" || return
   if [ -z "$token" ] && command -v security >/dev/null 2>&1; then
     token="$(security find-generic-password -s "${CF_KEYCHAIN_SERVICE:-residream-cf-purge}" -w 2>/dev/null || true)"
   fi
-  if [ -z "$token" ] || [ -z "${CF_ZONE_ID:-}" ]; then
-    echo "  没有配置 Cloudflare 令牌，请手动清缓存："
-    echo "  Cloudflare 后台 → $SITE_HOST → 缓存 → 配置 → 清除所有内容"
-    return 0
-  fi
-  resp="$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
-    -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \
-    --data '{"purge_everything":true}' || true)"
-  case "$resp" in
-    *'"success":true'*) echo "  已清除 Cloudflare 缓存" ;;
-    *) warn "新版本已上线，但清 Cloudflare 缓存失败：$resp"; return 1 ;;
-  esac
+  [ "$PURGE_ALL" = 0 ] || mode=all
+  CF_API_TOKEN="$token" CF_ZONE_ID="${CF_ZONE_ID:-}" bun scripts/deploy-cache.mjs "$RUN_DIR/pending.json" "$mode" "$RUN_DIR/ack" || return
+  while IFS= read -r id || [ -n "$id" ]; do [ -z "$id" ] || ids+=("$id"); done < "$RUN_DIR/ack"
+  [ "${#ids[@]}" = 0 ] || remote_tool ack "${ids[@]}"
 }
 
 sync_public_stats() {
-  if ! remote "sudo test -f /etc/systemd/system/residream-public-stats.service"; then
+  local installed stage
+  installed="$(remote "sudo -n true && if sudo -n test -f /etc/systemd/system/residream-public-stats.service; then echo yes; else code=\$?; [ \"\$code\" = 1 ] && echo no || exit \"\$code\"; fi")" || return
+  if [ "$installed" = no ]; then
     warn "服务器尚未安装每日公开数据任务，安装说明见 scripts/README.md"
     return 0
   fi
-  rsync -az scripts/public-stats/{update,chart,server}.py "$DEPLOY_HOST:${STAGE_DIR}-public-stats/" || return
-  remote "sudo install -m 644 ~/'${STAGE_DIR}-public-stats/'*.py /opt/residream-public-stats/ &&
-    rm ~/'${STAGE_DIR}-public-stats/'*.py && rmdir ~/'${STAGE_DIR}-public-stats' &&
-    if sudo test -f /etc/systemd/system/residream-public-refresh.service; then
-      sudo systemctl restart residream-public-refresh.service
-    fi &&
-    sudo systemctl start --no-block residream-public-stats.service"
+  [ "$installed" = yes ] || return 1
+  ensure_stage || return
+  stage="$REMOTE_STAGE/public-stats"
+  rsync -az -e "$RSYNC_SSH" scripts/public-stats/{update,chart,server}.py "$DEPLOY_HOST:$stage/" || return
+  remote "set -e
+    changed=0
+    for file in '$stage/'*.py; do
+      sudo -n cmp -s \"\$file\" \"/opt/residream-public-stats/\${file##*/}\" || changed=1
+    done
+    if [ \"\$changed\" = 1 ]; then
+      sudo -n install -m 644 '$stage/'*.py /opt/residream-public-stats/
+      if sudo -n test -f /etc/systemd/system/residream-public-refresh.service; then
+        sudo -n systemctl restart residream-public-refresh.service
+      fi
+    fi
+    sudo -n systemctl start --no-block residream-public-stats.service"
 }
 
 # rsync 差异转成「操作<TAB>路径」，用于发布前预览。
 live_changes() {
-  rsync -azcn --delete --exclude=/.release --itemize-changes dist/ "$DEPLOY_HOST:$WEB_ROOT/" | awk '
+  rsync -azcn -e "$RSYNC_SSH" --delete --exclude=/.release --itemize-changes dist/ "$DEPLOY_HOST:$WEB_ROOT/" | awk '
     /\/$/ { next }
     /^\*deleting/ { sub(/^\*deleting +/, ""); print "-\t" $0; next }
     /^[<>ch]f\+\+/ { sub(/^[^ ]+ /, ""); print "+\t" $0; next }
-    /^[<>ch]f/ { sub(/^[^ ]+ /, ""); print "~\t" $0; next }'
+    /^[<>ch]f[c.][s.]/ { if (substr($0,3,2) == "..") next; sub(/^[^ ]+ /, ""); print "~\t" $0; next }'
+}
+ensure_stage() {
+  local candidate
+  [ -z "$REMOTE_STAGE" ] || return 0
+  candidate="$(remote "mktemp -d ~/'${STAGE_DIR}.XXXXXX'")" || return
+  [[ "$candidate" =~ ^/[a-zA-Z0-9_./-]+$ ]] && [[ "$candidate" != *..* ]] && [[ "${candidate##*/}" == "$STAGE_DIR".?????? ]] || die "远端临时目录路径无效"
+  REMOTE_STAGE="$candidate"
 }
 print_changes() {
   if [ -z "$1" ]; then echo "  没有改动"; return; fi
@@ -190,7 +202,7 @@ if [ -n "$POST" ]; then
 fi
 
 # 导入会提交当前文章；其他改动必须显式允许。
-if [ "$ALLOW_DIRTY" = 0 ] && [ "$ROLLBACK" = 0 ]; then
+if [ "$ALLOW_DIRTY" = 0 ] && [ "$ROLLBACK$PURGE_ONLY" = 00 ]; then
   dirty_paths=(.)
   if [ -n "$POST" ]; then
     dirty_paths+=(":(exclude)$BLOG_DIR/$SLUG" ":(exclude)public/images/posts/$SLUG")
@@ -199,11 +211,29 @@ if [ "$ALLOW_DIRTY" = 0 ] && [ "$ROLLBACK" = 0 ]; then
 fi
 
 if [ "$IMPORT_ONLY" = 0 ]; then
+  command -v bun >/dev/null 2>&1 || die "需要先安装 Bun"
+  [[ "$SITE_HOST" =~ ^[a-zA-Z0-9.-]+$ ]] || die "SITE_HOST 只能填写域名"
+  [[ "$WEB_ROOT" =~ ^/[a-zA-Z0-9_.-]+(/[a-zA-Z0-9_.-]+)+$ ]] && [[ "$WEB_ROOT" != *..* ]] && [[ "$WEB_ROOT" != */./* ]] || die "WEB_ROOT 必须是独立的绝对目录"
+  case "$WEB_ROOT" in /var/www | /srv/www | /usr/share | /usr/local | */.) die "WEB_ROOT 不能指向共用目录" ;; esac
+  [[ "$STAGE_DIR" =~ ^[a-zA-Z0-9_-]+$ ]] || die "STAGE_DIR 必须是远端主目录中的单一目录名"
   : "${DEPLOY_HOST:?在 .deploy.env 里设置 DEPLOY_HOST（见 .deploy.env.example）}"
+  [[ "$DEPLOY_HOST" != -* ]] && [[ "$DEPLOY_HOST" != *[[:space:]]* ]] || die "DEPLOY_HOST 无效"
+  RSYNC_SSH='ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=3'
+  RUN_DIR="$(mktemp -d "${TMPDIR:-/tmp}/residream-deploy.XXXXXX")"
   step "检查 SSH：$DEPLOY_HOST"
   remote true 2>/dev/null || die "无法登录 ${DEPLOY_HOST}。
   如果是重启后密钥没加载，运行：ssh-add --apple-use-keychain ~/.ssh/id_ed25519"
   echo "  正常"
+fi
+
+if [ "$PURGE_ALL" = 1 ] && [ "$DRY_RUN" = 0 ]; then
+  warn "--purge-all 会清理整个 Cloudflare Zone，包括同区其他子域名"
+  confirm "  确认进行全区清缓存？" || exit 0
+fi
+if [ "$PURGE_ONLY" = 1 ]; then
+  step "重试 Cloudflare 缓存清理"
+  purge_cache
+  exit 0
 fi
 
 if [ "$ROLLBACK" = 1 ]; then
@@ -211,10 +241,8 @@ if [ "$ROLLBACK" = 1 ]; then
   remote "sudo test -f '$WEB_ROOT.prev/index.html'" || die "没有可回滚的版本（$WEB_ROOT.prev 不存在）"
   echo "  上一个版本：$(remote "sudo cat '$WEB_ROOT.prev/.release' 2>/dev/null || echo 未记录版本")"
   confirm "  把线上恢复成这个版本？" || { echo "  已取消，线上没有改动"; exit 0; }
-  remote "sudo rsync -a --delete '$WEB_ROOT.prev/' '$WEB_ROOT/'"
-  step "自检"
   status=0
-  verify || { warn "备份已恢复，但回滚后自检没有通过；仍会清理缓存"; status=1; }
+  remote_tool rollback || status=1
   step "清 Cloudflare 缓存"
   purge_cache || status=1
   exit "$status"
@@ -236,6 +264,7 @@ fi
 step "检查构建产物"
 [ -f dist/index.html ] || die "dist/index.html 不存在"
 [ -f dist/404.html ] || die "dist/404.html 不存在"
+[ -z "$(find dist -type l -print -quit)" ] || die "dist/ 不能包含符号链接"
 grep -q 'counterscale-script' dist/index.html || die "dist/index.html 里没有统计脚本（不是生产构建？）"
 echo "  $(find dist -name '*.html' | wc -l | tr -d ' ') 个页面，$(find dist -type f | wc -l | tr -d ' ') 个文件，$(du -sh dist | cut -f1 | tr -d ' ')"
 
@@ -245,28 +274,25 @@ print_changes "$changes"
 if [ "$DRY_RUN" = 1 ]; then echo "  （只是预览，服务器没有改动）"; exit 0; fi
 if [ -z "$changes" ]; then
   echo "  线上页面已经是这个版本"
-  sync_public_stats
-  exit 0
+  status=0
+  sync_public_stats || { warn "每日公开数据任务同步失败"; status=1; }
+  purge_cache || status=1
+  exit "$status"
 fi
 confirm "  确认发布到线上？" || { echo "  已取消，线上没有改动。之后要发布时运行：bun run deploy"; exit 0; }
 
-step "上传到 $DEPLOY_HOST:~/$STAGE_DIR"
-rsync -azc --delete dist/ "$DEPLOY_HOST:$STAGE_DIR/"
+ensure_stage
+step "上传到 $DEPLOY_HOST:$REMOTE_STAGE"
+remote "mkdir '$REMOTE_STAGE/site' && if [ -d '$WEB_ROOT' ]; then rsync -a '$WEB_ROOT/' '$REMOTE_STAGE/site/'; fi"
+rsync -azc -e "$RSYNC_SSH" --delete dist/ "$DEPLOY_HOST:$REMOTE_STAGE/site/"
+printf '%s · %s\n' "$RELEASE" "$(date '+%Y-%m-%d %H:%M')" > "$RUN_DIR/.release"
+rsync -az -e "$RSYNC_SSH" "$RUN_DIR/.release" "$DEPLOY_HOST:$REMOTE_STAGE/site/"
 
 step "发布到 ${WEB_ROOT}（当前线上版本备份到 ${WEB_ROOT}.prev）"
-remote_in bash -s <<EOF
-set -e
-sudo mkdir -p '$WEB_ROOT' '$WEB_ROOT.prev'
-sudo rsync -a --delete '$WEB_ROOT/' '$WEB_ROOT.prev/'
-sudo rsync -a --delete ~/'$STAGE_DIR'/ '$WEB_ROOT/'
-sudo chown -R root:root '$WEB_ROOT'
-sudo find '$WEB_ROOT' -type d -exec chmod 755 {} +
-sudo find '$WEB_ROOT' -type f -exec chmod 644 {} +
-EOF
-printf '%s · %s\n' "$RELEASE" "$(date '+%Y-%m-%d %H:%M')" | remote_in "sudo tee '$WEB_ROOT/.release' >/dev/null"
-
-step "自检"
-verify || die "自检没有通过；要恢复上一个版本，运行：bun run deploy --rollback"
+if ! remote_tool publish "$REMOTE_STAGE/site"; then
+  purge_cache || true
+  die "发布未完成；请查看上方恢复结果，必要时运行 bun run deploy --rollback"
+fi
 status=0
 
 step "同步每日公开数据任务"
