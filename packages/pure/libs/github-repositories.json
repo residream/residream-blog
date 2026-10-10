@@ -65,6 +65,17 @@
       "avatar": "https://avatars.githubusercontent.com/u/210627640?v=4"
     }
   },
+  "residream/2026-spiritctf-warm-web": {
+    "fetchedAt": "2026-10-10T17:07:30.011Z",
+    "data": {
+      "description": "2026 SpiritCTF Warm Web 方向个人出题归档，包含题目源码、Docker 构建文件及题解",
+      "stars": 1,
+      "forks": 0,
+      "language": "Python",
+      "license": "MIT",
+      "avatar": "https://avatars.githubusercontent.com/u/231655116?v=4"
+    }
+  },
   "walinejs/waline": {
     "fetchedAt": "2026-09-23T09:48:59.661014Z",
     "data": {
