@@ -80,7 +80,11 @@ const contentParts = body?.includes('<github-card')
   {
     contentParts ? (
       contentParts.map((part) =>
-        part.type === 'repo' ? <GithubCard repo={part.repo} /> : <Fragment set:html={part.html} />
+        part.type === 'repo' ? (
+          <GithubCard repo={part.repo} description={part.description} />
+        ) : (
+          <Fragment set:html={part.html} />
+        )
       )
     ) : (
       <slot />

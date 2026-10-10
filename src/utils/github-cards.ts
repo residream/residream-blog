@@ -9,16 +9,18 @@ type HtmlNode = {
   sourceCodeLocation?: { startOffset: number; endOffset: number } | null
 }
 
-type Part = { type: 'html'; html: string } | { type: 'repo'; repo: string }
+type Part = { type: 'html'; html: string } | { type: 'repo'; repo: string; description?: string }
 
 export function splitGithubCards(html: string): Part[] {
-  const cards: { start: number; end: number; repo: string }[] = []
+  const cards: { start: number; end: number; repo: string; description?: string }[] = []
 
   function visit(node: HtmlNode, parent?: HtmlNode) {
     if (node.tagName === 'pre' || node.tagName === 'code') return
     if (node.tagName === 'github-card') {
       const repo = node.attrs?.find((attr) => attr.name === 'data-repo')?.value
       if (!repo || !/^[\w.-]+\/[\w.-]+$/.test(repo)) return
+      const description =
+        node.attrs?.find((attr) => attr.name === 'data-description')?.value.trim() || undefined
       const wrapped = parent?.tagName === 'p'
       if (
         wrapped &&
@@ -29,7 +31,8 @@ export function splitGithubCards(html: string): Part[] {
         return
 
       const location = (wrapped ? parent : node)?.sourceCodeLocation
-      if (location) cards.push({ start: location.startOffset, end: location.endOffset, repo })
+      if (location)
+        cards.push({ start: location.startOffset, end: location.endOffset, repo, description })
       return
     }
     node.childNodes?.forEach((child) => visit(child, node))
@@ -40,7 +43,7 @@ export function splitGithubCards(html: string): Part[] {
   let cursor = 0
   for (const card of cards) {
     parts.push({ type: 'html', html: html.slice(cursor, card.start) })
-    parts.push({ type: 'repo', repo: card.repo })
+    parts.push({ type: 'repo', repo: card.repo, description: card.description })
     cursor = card.end
   }
   parts.push({ type: 'html', html: html.slice(cursor) })

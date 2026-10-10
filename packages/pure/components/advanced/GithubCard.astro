@@ -6,12 +6,15 @@ import { Icon } from '../user'
 
 interface Props {
   repo: string
+  description?: string
 }
 
 const repo = Astro.props.repo.replace(/^https:\/\/github\.com\//, '').replace(/\/$/, '')
 const [owner, repoName] = repo.split('/')
 const data = await getGithubRepository(repo)
-const description = data?.description === '查看 GitHub 项目' ? undefined : data?.description
+const description =
+  Astro.props.description?.trim() ||
+  (data?.description === '查看 GitHub 项目' ? undefined : data?.description)
 const numberFormat = Intl.NumberFormat('en-us', {
   notation: 'compact',
   maximumFractionDigits: 1
