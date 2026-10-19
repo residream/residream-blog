@@ -4,7 +4,7 @@ import { Image } from 'astro:assets'
 import { Quote } from 'astro-pure/advanced'
 import { PostPreview } from 'astro-pure/components/pages'
 import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
-import { Button, Card, Icon, Label } from 'astro-pure/user'
+import { Button, Card, Icon, Label, Timeline } from 'astro-pure/user'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import ProjectCard from '@/components/home/ProjectCard.astro'
 import Section from '@/components/home/Section.astro'
@@ -138,6 +138,20 @@ if (!images[imagePath])
             imagePath='/src/assets/projects/playing-grown-up.jpg'
           />
         </div>
+      </Section>
+
+      <Section title='Awards'>
+        <Card>
+          <Timeline
+            class='[&_samp]:shrink-0 [&_samp]:text-muted-foreground'
+            events={[
+              {
+                date: '2026-10',
+                content: uiText('home.awards.academicHonors', '学年一等奖学金、院优秀学生', locale)
+              }
+            ]}
+          />
+        </Card>
       </Section>
 
       <Section title='Skills'>
