@@ -6,15 +6,15 @@ tags:
   - "ctf"
   - "web"
 heroImage:
-  src: ./spiritctf-2026-web-writeup.assets/downtown.jpg
+  src: ./spiritctf-2026-warm-web-writeup.assets/downtown.jpg
   color: "#282838"
-  alt: SpiritCTF2026 Web 出题记录与题解
+  alt: SpiritCTF2026 Warm Web 出题记录与题解
 language: 'zh-CN'
 draft: false
 slug: spiritctf-2026-warm-web-writeup
 ---
 
-> 之前都是作为选手打比赛，这次有幸参与学校网络安全比赛 SpiritCTF2026 的出题，负责设计和编写部分 Web 题目，感觉出题对自身提升也很大，需要考虑漏洞与防止非预期，同时还要自己编写 Web 应用和用 Docker 搭好环境，但是收获颇丰，增加了很多经验
+> 之前都是作为选手打比赛，这次有幸参与学校网络安全比赛 SpiritCTF2026 Warm 的出题，负责设计和编写部分 Web 题目，感觉出题对自身提升也很大，需要考虑漏洞与防止非预期，同时还要自己编写 Web 应用和用 Docker 搭好环境，但是收获颇丰，增加了很多经验
 >
 > 这篇文章则主要记录这几道题的题解，如果想先自己尝试，欢迎访问我的 GitHub 仓库，下载题目并在本地构建运行，并且如果阅读过我以前的博客的话你能很明显体会到我对以往一些题一些有意思的点的参考喵，同时这里也表示感谢喵
 

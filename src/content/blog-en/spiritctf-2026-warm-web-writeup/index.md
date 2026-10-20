@@ -6,7 +6,7 @@ tags:
   - ctf
   - web
 heroImage:
-  src: ../../blog/spiritctf-2026-warm-web-writeup/spiritctf-2026-web-writeup.assets/downtown.jpg
+  src: ../../blog/spiritctf-2026-warm-web-writeup/spiritctf-2026-warm-web-writeup.assets/downtown.jpg
   color: "#282838"
   alt: "SpiritCTF 2026 Warm: Web Challenge Design and Writeups"
 language: en
