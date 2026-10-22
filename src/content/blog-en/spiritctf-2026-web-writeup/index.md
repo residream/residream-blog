@@ -16,6 +16,8 @@ slug: spiritctf-2026-web-writeup
 
 > This was an in-person competition with no internet access, and most of the players were fairly new to CTFs. I think I made the challenges a bit too hard.
 
+<github-card data-repo="residream/2026-SpiritCTF-Web" data-description="My Web challenges for SpiritCTF 2026, with source code, Docker build files, and writeups."><a href="https://github.com/residream/2026-SpiritCTF-Web">2026 SpiritCTF · Web challenge source code and writeups</a></github-card>
+
 ## Magical Request Headers
 
 A warm-up challenge written by a senior student. Just change the HTTP method and headers as instructed. If I remember correctly, the final request used POST, with User-Agent set to Spirit and Referer set to JLU.

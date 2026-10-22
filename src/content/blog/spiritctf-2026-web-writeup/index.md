@@ -16,6 +16,8 @@ slug: spiritctf-2026-web-writeup
 
 > 这次比赛线下断网，大部分选手也没什么基础，感觉有点出难了
 
+<github-card data-repo="residream/2026-SpiritCTF-Web"><a href="https://github.com/residream/2026-SpiritCTF-Web">2026 SpiritCTF · Web 题目源码与题解</a></github-card>
+
 ## 神奇的请求头
 
 学长出的签到题，按照要求改请求方式和 http header 即可，最后好像是 POST 请求，设置 User-Agent 为 Spirit ，设置 Referer 为 JLU 即可
