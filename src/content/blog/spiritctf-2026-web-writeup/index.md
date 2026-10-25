@@ -6,8 +6,8 @@ tags:
   - "ctf"
   - "web"
 heroImage:
-  src: ./spiritctf-2026-web-writeup.assets/city-light.jpg
-  color: "#282838"
+  src: ./spiritctf-2026-web-writeup.assets/ramen.jpg
+  color: "#181828"
   alt: SpiritCTF2026 Web 出题记录与题解
 language: 'zh-CN'
 draft: false

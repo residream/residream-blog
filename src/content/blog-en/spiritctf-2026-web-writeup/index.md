@@ -6,8 +6,8 @@ tags:
   - "ctf"
   - "web"
 heroImage:
-  src: ../../blog/spiritctf-2026-web-writeup/spiritctf-2026-web-writeup.assets/city-light.jpg
-  color: "#282838"
+  src: ../../blog/spiritctf-2026-web-writeup/spiritctf-2026-web-writeup.assets/ramen.jpg
+  color: "#181828"
   alt: "SpiritCTF 2026: Web Challenge Design and Writeups"
 language: 'en'
 draft: false
