@@ -28,7 +28,7 @@ const sites = [
     href: 'https://github.com/lyc8503/UptimeFlare'
   },
   {
-    folder: 'CyberChef',
+    folder: 'residream-blog-chef',
     assets: 'deploy/cloudflare/site-ui/assets',
     manifest: 'deploy/cloudflare/site-ui/manifest.json',
     title: 'Online tools',
