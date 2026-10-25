@@ -28,6 +28,7 @@ const imageSize =
       ? { width: 1200, height: 630 }
       : undefined
 const noindex = /^(?:\/en)?\/404(?:\.html)?\/?$/.test(Astro.url.pathname)
+const preloadChart = /^(?:\/en)?\/projects\/?$/.test(Astro.url.pathname)
 const locale = getLocale(Astro.url)
 const { alternates } = await languageLinks(Astro.url)
 
@@ -80,6 +81,11 @@ const speculationRules = {
 <link rel='icon' type='image/png' sizes='16x16' href='/favicon/favicon-16x16.png' />
 <link rel='apple-touch-icon' sizes='180x180' href='/favicon/apple-touch-icon.png' />
 <link rel='manifest' href='/favicon/site.webmanifest' />
+{
+  preloadChart && (
+    <link rel='preload' as='image' href='/data/github-contributions.svg' fetchpriority='high' />
+  )
+}
 
 {/* Font preloads */}
 <Font cssVariable='--font-satoshi' preload={[{ subset: 'latin', style: 'normal' }]} />

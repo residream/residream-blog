@@ -275,9 +275,10 @@ def main():
     args.output.parent.mkdir(parents=True, exist_ok=True)
     values, failures, total = refresh_saved(args.output, seeds=discover(args.web_root), force=True)
     print(f"Public statistics: {total - len(failures)}/{total} sources refreshed; {len(values)} values available", flush=True)
-    from chart import refresh_chart
+    from chart import read_chart_meta, refresh_chart
     refresh_chart(args.output.parent, seed=args.web_root / "data/github-contributions.svg", force=True)
-    return 1 if total and len(failures) == total else 0
+    chart_failed = read_chart_meta(args.output.parent).get("status") != "ok"
+    return 1 if chart_failed or (total and len(failures) == total) else 0
 
 
 if __name__ == "__main__":

@@ -132,12 +132,12 @@ async function refreshChart() {
   try {
     version ??= await loadChart('/data/github-contributions.svg')
   } catch {
-    // The chart embedded in the HTML remains visible if the cache is unavailable.
+    // The image already loaded by the page remains visible if this request fails.
   }
   try {
     const response = await fetch('/data/public-refresh.json?chart=1', {
       credentials: 'omit',
-      signal: AbortSignal.timeout(12000)
+      signal: AbortSignal.timeout(25000)
     })
     if (!response.ok) return
     const data = await response.json()
