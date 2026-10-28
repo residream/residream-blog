@@ -6,10 +6,14 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import threading
+import time
 from urllib.parse import parse_qs, urlsplit
 
-from chart import refresh_chart
+from chart import read_chart_meta, refresh_chart, retry_due
 from update import read_seeds, refresh_saved
+
+
+RETRY_POLL_INTERVAL = 15
 
 
 class RefreshServer(ThreadingHTTPServer):
@@ -20,6 +24,23 @@ class RefreshServer(ThreadingHTTPServer):
         self.directory = directory
         self.slots = threading.BoundedSemaphore(4)
         super().__init__(address, Handler)
+        self.retry_stop = threading.Event()
+        self.retry_thread = threading.Thread(target=self.retry_charts, daemon=True)
+        self.retry_thread.start()
+
+    def retry_charts(self):
+        while not self.retry_stop.wait(RETRY_POLL_INTERVAL):
+            try:
+                if retry_due(read_chart_meta(self.directory), time.time()):
+                    refresh_chart(self.directory, retry_only=True)
+            except Exception as error:
+                print(f"Chart retry unavailable: {type(error).__name__}", flush=True)
+
+    def server_close(self):
+        if hasattr(self, "retry_stop"):
+            self.retry_stop.set()
+            self.retry_thread.join(timeout=20)
+        super().server_close()
 
     def process_request(self, request, address):
         if not self.slots.acquire(blocking=False):
