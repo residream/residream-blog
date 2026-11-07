@@ -120,6 +120,46 @@ bun run deploy --rollback
 
 默认比较构建产物与线上文件的实际内容，只清理新增、修改、删除文件对应的 URL。修改公共布局或样式导致多个 HTML 变化时，这些页面也会自动纳入；只有时间戳或权限变化不算内容更新。页面同时处理 `/about`、`/about/`、`/about/index.html` 这样的访问形式，以及英文页面。图片、RSS、搜索索引等固定地址的文件也包含在内；新增的 `_astro/` 构建资源使用新地址，不额外清缓存。
 
+发布和回滚前，脚本把当前 `_astro/` 资源保存在服务器 `${WEB_ROOT}.deploy/assets/`，后续成功发布时清理超过七天未使用的副本。它们不进入构建产物或 Git。这样浏览器仍持有旧页面时，可以继续读取对应的脚本、样式、字体和图片；页面和文章附件不使用这份缓存。
+
+这需要 Nginx 的 `/_astro/` 路由在当前版本找不到文件时读取保留目录。使用默认 `WEB_ROOT` 时，把原有该路由替换为：
+
+```nginx
+location ^~ /_astro/ {
+    try_files $uri @residream_retained_asset;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+    add_header X-Content-Type-Options "nosniff" always;
+    access_log off;
+}
+
+location @residream_retained_asset {
+    root /var/www/residream-blog.deploy/assets;
+    try_files $uri =404;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+    add_header X-Content-Type-Options "nosniff" always;
+    access_log off;
+}
+```
+
+调整 `WEB_ROOT` 时同步调整保留目录；修改后先运行 `nginx -t`，再平滑重载。长期缓存头不加 `always`，避免把资源不存在时的 404 也缓存一年。
+
+主站的静态 HTML 在 Cloudflare 缓存五分钟，浏览器仍接收 `Cache-Control: no-cache`，每次访问都会校验更新。仅无查询参数、无认证头、无设置 Cookie 的 GET/HEAD 成功响应使用这项缓存；带查询参数的页面沿用原校验策略。评论接口、健康检查和按需刷新接口不使用 HTML 缓存。
+
+Nginx 在 `http` 层定义：
+
+```nginx
+map "$residream_static_page:$request_method:$status:$sent_http_content_type:$is_args:$http_authorization:$sent_http_set_cookie" $residream_html_edge_cache {
+    default "";
+    "~^1:(GET|HEAD):200:text/html(?:;[^:]*)?:::$" "max-age=300";
+}
+```
+
+主站的 `server` 开头设置 `set $residream_static_page 0;`，与原有安全响应头同层加入 `add_header Cloudflare-CDN-Cache-Control $residream_html_edge_cache;`，只在静态文件的 `location /` 中设置 `set $residream_static_page 1;`。原有 HTML 的 `expires`、安全响应头和其他路由保持不变，避免新增 `add_header` 时丢失继承的安全响应头。
+
+Cloudflare 的主站缓存规则需允许缓存并遵循源站 TTL，浏览器 TTL 也遵循源站，`/healthz` 单独绕过缓存。另建一条排在主站缓存规则之后的“绕过缓存”规则，条件为 `(http.host eq "residream.com" and any(http.request.headers["authorization"][*] ne ""))`，避免认证请求直接命中已有的公共页面缓存。
+
+首次调整源站缓存头后，按页面 URL 清理现有 HTML 缓存；后续发布由部署脚本按改动自动清理。设置参考 [Cloudflare 的 CDN 缓存头说明](https://developers.cloudflare.com/cache/concepts/cdn-cache-control/)。
+
 每日公开数字与贡献图继续使用独立的缓存和刷新周期。默认清理只针对 `SITE_HOST`，不影响其他子域名；查询参数、自定义缓存键或额外域名不自动展开，调整 Cloudflare 缓存规则时需同时核对这些情况。URL 清理要求缓存规则也能匹配清理请求，详见 [Cloudflare 的说明](https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-single-file/)。
 
 Cloudflare 请求每批最多 100 个 URL，有超时和有限重试。失败时退出码非零，已发布的页面保留；未完成清单保存在服务器 `${WEB_ROOT}.deploy/`，后续部署即使没有页面变化也会补做清理，或单独运行：

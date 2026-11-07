@@ -12,7 +12,19 @@ import signal
 import subprocess
 import sys
 import tempfile
+import time
 import uuid
+
+
+ASSET_RETENTION_SECONDS = 7 * 24 * 60 * 60
+
+
+def file_digest(file):
+    digest = hashlib.sha256()
+    with file.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 def atomic_json(file, value):
@@ -33,11 +45,7 @@ def inventory(root):
         name = file.relative_to(root).as_posix()
         if any(ord(char) < 32 for char in name):
             raise RuntimeError("发布文件名不能包含控制字符")
-        digest = hashlib.sha256()
-        with file.open("rb") as stream:
-            for block in iter(lambda: stream.read(1024 * 1024), b""):
-                digest.update(block)
-        result[name] = digest.hexdigest()
+        result[name] = file_digest(file)
     return result
 
 
@@ -110,6 +118,7 @@ class Deployment:
         self.state = Path(root + ".deploy")
         self.queue = self.state / "purge"
         self.journal = self.state / "transaction.json"
+        self.assets = self.state / "assets"
         for file in [self.previous, self.state]:
             if file.is_symlink():
                 raise RuntimeError(f"部署状态目录不能是符号链接：{file}")
@@ -146,11 +155,49 @@ class Deployment:
         for batch_id in ids:
             (self.queue / (batch_id + ".json")).unlink(missing_ok=True)
 
+    def retain_assets(self, source, files=None):
+        files = inventory(source) if files is None else files
+        if self.assets.resolve() != self.assets:
+            raise RuntimeError(f"旧资源目录不能包含符号链接：{self.assets}")
+        cached = inventory(self.assets)
+        for name, digest in files.items():
+            if not name.startswith("_astro/"):
+                continue
+            target = self.assets / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if cached.get(name) != digest:
+                fd, temporary = tempfile.mkstemp(prefix=".asset-", dir=target.parent)
+                os.close(fd)
+                temporary = Path(temporary)
+                try:
+                    shutil.copyfile(source / name, temporary)
+                    if file_digest(temporary) != digest:
+                        raise RuntimeError(f"旧资源备份校验失败：{name}")
+                    temporary.chmod(0o644)
+                    os.replace(temporary, target)
+                finally:
+                    temporary.unlink(missing_ok=True)
+            os.utime(target, None)
+
+    def prune_assets(self):
+        if self.assets.resolve() != self.assets:
+            raise RuntimeError(f"旧资源目录不能包含符号链接：{self.assets}")
+        cutoff = time.time() - ASSET_RETENTION_SECONDS
+        for name in inventory(self.assets):
+            if name.startswith("_astro/"):
+                file = self.assets / name
+                if file.stat().st_mtime < cutoff:
+                    file.unlink()
+
     def restore(self):
         journal = json.loads(self.journal.read_text())
         source = self.previous if journal["backup"] == "previous" else self.state / "rollback-backup"
         if not source.is_dir():
             raise RuntimeError("中断恢复所需的备份不存在，请保留部署目录并人工检查")
+        try:
+            self.retain_assets(self.root)
+        except Exception as error:
+            print(f"  注意：未能保留本次发布的资源，继续恢复页面：{error}", file=sys.stderr, flush=True)
         copy_tree(source, self.root)
         normalize(self.root)
         if inventory(source) != inventory(self.root):
@@ -175,6 +222,7 @@ class Deployment:
         if not paths:
             print("  文件内容没有变化，保留现有版本和备份", flush=True)
             return
+        self.retain_assets(self.root, before)
         snapshot = Path(tempfile.mkdtemp(prefix="backup-", dir=self.state))
         try:
             if self.root.exists():
@@ -202,6 +250,10 @@ class Deployment:
             raise
         self.journal.unlink()
         shutil.rmtree(self.state / "rollback-backup", ignore_errors=True)
+        try:
+            self.prune_assets()
+        except Exception as error:
+            print(f"  注意：旧资源清理未完成，已发布页面不受影响：{error}", file=sys.stderr, flush=True)
         print("  发布文件和源站自检均通过", flush=True)
 
 
