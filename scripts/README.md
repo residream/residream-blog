@@ -143,14 +143,19 @@ location @residream_retained_asset {
 
 调整 `WEB_ROOT` 时同步调整保留目录；修改后先运行 `nginx -t`，再平滑重载。长期缓存头不加 `always`，避免把资源不存在时的 404 也缓存一年。
 
-主站的静态 HTML 在 Cloudflare 缓存五分钟，浏览器仍接收 `Cache-Control: no-cache`，每次访问都会校验更新。仅无查询参数、无认证头、无设置 Cookie 的 GET/HEAD 成功响应使用这项缓存；带查询参数的页面沿用原校验策略。评论接口、健康检查和按需刷新接口不使用 HTML 缓存。
+主站的静态 HTML 在 Cloudflare 缓存五分钟，过期后允许一天内先返回旧副本并在后台刷新；同时设置一天的 `stale-if-error` 作为额外兜底。浏览器仍接收 `Cache-Control: no-cache`。`/favicon/`、`/icons/`、`/emojis/`、`/images/` 和 `/files/` 下的静态资源在边缘缓存一天，附带相同的一天后台刷新与错误兜底窗口，浏览器缓存行为不变。仅无查询参数、无认证头、无设置 Cookie 的 GET/HEAD、200 响应使用这些规则。评论接口、健康检查、按需刷新、Pagefind、RSS 和 sitemap 不加入这轮缓存；公开数字和贡献图继续使用各自的十分钟缓存。
 
 Nginx 在 `http` 层定义：
 
 ```nginx
-map "$residream_static_page:$request_method:$status:$sent_http_content_type:$is_args:$http_authorization:$sent_http_set_cookie" $residream_html_edge_cache {
+map $uri $residream_edge_asset {
+    default 0;
+    ~^/(?:favicon|icons|emojis|images|files)/ 1;
+}
+map "$residream_static_page$residream_edge_asset:$request_method:$status:$sent_http_content_type:$is_args:$http_authorization:$sent_http_set_cookie" $residream_html_edge_cache {
     default "";
-    "~^1:(GET|HEAD):200:text/html(?:;[^:]*)?:::$" "max-age=300";
+    "~^1[01]:(GET|HEAD):200:text/html(?:;[^:]*)?:::$" "max-age=300, stale-while-revalidate=86400, stale-if-error=86400";
+    "~^11:(GET|HEAD):200:[^:]+:::$" "max-age=86400, stale-while-revalidate=86400, stale-if-error=86400";
 }
 ```
 
@@ -158,7 +163,9 @@ map "$residream_static_page:$request_method:$status:$sent_http_content_type:$is_
 
 Cloudflare 的主站缓存规则需允许缓存并遵循源站 TTL，浏览器 TTL 也遵循源站，`/healthz` 单独绕过缓存。另建一条排在主站缓存规则之后的“绕过缓存”规则，条件为 `(http.host eq "residream.com" and any(http.request.headers["authorization"][*] ne ""))`，避免认证请求直接命中已有的公共页面缓存。
 
-首次调整源站缓存头后，按页面 URL 清理现有 HTML 缓存；后续发布由部署脚本按改动自动清理。设置参考 [Cloudflare 的 CDN 缓存头说明](https://developers.cloudflare.com/cache/concepts/cdn-cache-control/)。
+Cloudflare 需关闭 Always Online，并允许重新验证时提供旧副本；Smart Tiered Cache 用于减少不同节点的分散回源，不替代健康检查。
+
+仅修改 Nginx 缓存头不会产生构建内容差异，需额外按页面 URL 清理现有 HTML 缓存，避免旧策略随 304 重新验证继续保留；后续内容发布仍由部署脚本按改动自动清理。PDF 冷缓存的分段请求不保证填入缓存，大附件可在发布后做一次完整读取预热。设置参考 [Cloudflare 的 CDN 缓存头说明](https://developers.cloudflare.com/cache/concepts/cdn-cache-control/)。
 
 每日公开数字与贡献图继续使用独立的缓存和刷新周期。默认清理只针对 `SITE_HOST`，不影响其他子域名；查询参数、自定义缓存键或额外域名不自动展开，调整 Cloudflare 缓存规则时需同时核对这些情况。URL 清理要求缓存规则也能匹配清理请求，详见 [Cloudflare 的说明](https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-single-file/)。
 
