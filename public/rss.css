@@ -1,0 +1,74 @@
+@namespace xhtml url('http://www.w3.org/1999/xhtml');
+
+rss {
+  display: block;
+  color-scheme: light dark;
+  background: Canvas;
+  color: CanvasText;
+  font:
+    1rem/1.55 system-ui,
+    sans-serif;
+}
+
+channel {
+  display: block;
+  box-sizing: border-box;
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 5vw, 4rem) 1.25rem;
+}
+
+/* The browser preview shows links and dates. Readers still get the full RSS items. */
+channel > *,
+item > * {
+  display: none;
+}
+
+channel > xhtml|header {
+  display: block;
+  margin-block-end: 2rem;
+}
+
+xhtml|h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  line-height: 1.25;
+}
+
+xhtml|p {
+  margin: 0.6rem 0 0;
+}
+
+channel > item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-block: 0.85rem;
+  border-block-start: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+
+item > xhtml|a {
+  display: block;
+  order: -1;
+  align-self: start;
+  max-width: 100%;
+  font-weight: 600;
+}
+
+xhtml|a {
+  color: inherit;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+xhtml|a:hover,
+xhtml|a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+item > pubDate {
+  display: block;
+  color: GrayText;
+  font-size: 0.875rem;
+}

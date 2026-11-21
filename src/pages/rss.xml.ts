@@ -75,24 +75,39 @@ export const GET: APIRoute = async (context) => {
   const locale = getLocale(context.url)
   const posts = sortMDByDate(await getBlogCollection(blogCollection(locale)))
   const site = context.site ?? new URL(import.meta.env.SITE)
+  const subscribeHint =
+    locale === 'en'
+      ? 'Add this page’s address to your RSS reader to subscribe.'
+      : '复制此页地址，在 RSS 阅读器中添加订阅。'
   return rss({
     trailingSlash: false,
-    xmlns: { h: 'http://www.w3.org/TR/html4/', atom: 'http://www.w3.org/2005/Atom' },
-    stylesheet: '/scripts/pretty-feed-v3.xsl',
+    xmlns: {
+      h: 'http://www.w3.org/TR/html4/',
+      atom: 'http://www.w3.org/2005/Atom',
+      xhtml: 'http://www.w3.org/1999/xhtml'
+    },
+    stylesheet: '/rss.css',
     title: config.title,
     description: config.description,
     site,
-    customData: `<language>${locale}</language>`,
+    customData: `<language>${locale}</language>
+      <xhtml:meta name="viewport" content="width=device-width, initial-scale=1"/>
+      <xhtml:header lang="${locale}">
+        <xhtml:h1><xhtml:a href="${localePath('/', locale)}">${escapeXml(config.title)} · RSS</xhtml:a></xhtml:h1>
+        <xhtml:p>${subscribeHint}</xhtml:p>
+      </xhtml:header>`,
     items: await Promise.all(
       posts.map(async (post) => {
+        const link = localePath(`/blog/${post.id}`, locale)
         const hero = post.data.heroImage?.src
         const heroPath =
           typeof hero === 'string' ? hero : hero ? (await getImage({ src: hero })).src : undefined
         return {
           ...post.data,
           pubDate: post.data.publishDate,
-          link: localePath(`/blog/${post.id}`, locale),
+          link,
           customData: [
+            `<xhtml:a href="${escapeXml(link)}" lang="${locale}">${escapeXml(post.data.title)}</xhtml:a>`,
             heroPath ? `<h:img src="${escapeXml(new URL(heroPath, site).href)}" />` : '',
             post.data.updatedDate
               ? `<atom:updated>${post.data.updatedDate.toISOString()}</atom:updated>`
